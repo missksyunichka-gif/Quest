@@ -98,12 +98,14 @@ pre.report{white-space:pre-wrap;background:#f6f3ec;border-radius:12px;padding:12
 
 <!-- START -->
 <section class="card" id="start">
-  <h2>Как тебя зовут? <span class="ko">이름이 뭐예요?</span></h2>
-  <p class="hint">Впиши имя — оно попадёт в отчёт для преподавателя.</p>
+  <h2>Вход <span class="ko">로그인</span></h2>
+  <p class="hint">Впиши имя и PIN-код из 4 цифр. Первый раз — придумай PIN и запомни его: с ним ты продолжишь задание на любом устройстве. Если ты уже входил(а) в тренажёры, используй те же имя и PIN.</p>
   <div class="row">
-    <input type="text" id="name" placeholder="Имя" style="flex:1;min-width:180px">
-    <button id="go">Начать</button>
+    <input type="text" id="name" placeholder="Имя" autocomplete="off" style="flex:2;min-width:160px">
+    <input type="password" id="pin" inputmode="numeric" maxlength="8" placeholder="PIN ••••" autocomplete="off" style="flex:1;min-width:110px">
+    <button id="go">Войти</button>
   </div>
+  <p class="fb" id="login-msg" style="min-height:1.2em"></p>
 </section>
 
 <div id="tasks" class="hidden">
@@ -111,6 +113,7 @@ pre.report{white-space:pre-wrap;background:#f6f3ec;border-radius:12px;padding:12
     <span class="fb" id="who" style="margin:0"></span>
     <span class="fb" id="saved" style="margin:0 0 0 auto">💾 Прогресс сохраняется автоматически</span>
     <button class="ghost" id="reset" style="padding:6px 12px;font-size:14px">Начать заново</button>
+    <button class="ghost" id="logout" style="padding:6px 12px;font-size:14px">Выйти</button>
   </div>
   <div class="progress" id="progress"></div>
 
@@ -184,6 +187,7 @@ pre.report{white-space:pre-wrap;background:#f6f3ec;border-radius:12px;padding:12
   <div class="row" style="justify-content:center">
     <button id="copy">Скопировать отчёт</button>
     <button class="ghost" id="again">Пройти ещё раз</button>
+    <button class="ghost" id="logout2">Выйти</button>
   </div>
   <p class="fb" id="send-status"></p>
 </section>
@@ -191,6 +195,7 @@ pre.report{white-space:pre-wrap;background:#f6f3ec;border-radius:12px;padding:12
 </div>
 
 <script>
+const SB = { url:"https://nusfkwtmnbhnbnckhrfk.supabase.co", key:"sb_publishable_UmWyFo7ciEc-m9x1ZIfkNw_yeQQAgf8", site:"quest-gajeon" };
 const CONFIG = { TELEGRAM_BOT_TOKEN: "9252730022:AAGhfn1DzR05foOHV6zFiTirJlRqSoUCgTU", TELEGRAM_CHAT_ID: "347625701" };
 
 const $ = s => document.querySelector(s);
@@ -373,14 +378,33 @@ function collect(){
     finished
   };
 }
+/* --- облако (Supabase): load_progress / save_progress с проверкой PIN --- */
+let studentPin="", cloudOk=null, cloudTimer=null;
+async function rpc(fn, body){
+  const r=await fetch(`${SB.url}/rest/v1/rpc/${fn}`,{method:"POST",headers:{"Content-Type":"application/json",apikey:SB.key},body:JSON.stringify(body)});
+  const t=await r.text();
+  if(!r.ok){ const e=new Error(/wrong_pin/.test(t)?"wrong_pin":"server"); throw e; }
+  return t?JSON.parse(t):null;
+}
+const cloudLoad = ()=>rpc("load_progress",{p_site:SB.site,p_name:studentName,p_pin:studentPin});
+const cloudSave = st=>rpc("save_progress",{p_site:SB.site,p_name:studentName,p_pin:studentPin,p_state:st});
+function setStatus(){ const el=$("#saved");
+  el.textContent = cloudOk===true ? "☁️✓ Сохранено в облаке" : cloudOk===false ? "⚠️ Сохранено только на этом устройстве" : "💾 Сохраняю…"; }
+
 function save(){
   if (restoring || !studentName) return;
-  try { localStorage.setItem(KEY, JSON.stringify(collect())); flashSaved(); } catch(e){}
+  const st=collect();
+  try { localStorage.setItem(KEY, JSON.stringify(st)); } catch(e){}
+  cloudOk=null; setStatus();
+  clearTimeout(cloudTimer);
+  cloudTimer=setTimeout(async()=>{ try{ await cloudSave(collect()); cloudOk=true; }catch(e){ cloudOk=false; } setStatus(); },700);
 }
-let savedTimer;
-function flashSaved(){ const el=$("#saved"); el.textContent="💾 Сохранено ✓"; clearTimeout(savedTimer); savedTimer=setTimeout(()=>el.textContent="💾 Прогресс сохраняется автоматически",1200); }
 function loadSaved(){ try { return JSON.parse(localStorage.getItem(KEY)); } catch(e){ return null; } }
 function clearSaved(){ try { localStorage.removeItem(KEY); } catch(e){} }
+const CRED="gajeon-login-v1";
+function saveCred(){ try{ localStorage.setItem(CRED, JSON.stringify({n:studentName,p:studentPin})); }catch(e){} }
+function loadCred(){ try{ return JSON.parse(localStorage.getItem(CRED)); }catch(e){ return null; } }
+function clearCred(){ try{ localStorage.removeItem(CRED); }catch(e){} }
 
 function restorePicks(container, picks){
   [...container.querySelectorAll(".q")].forEach((q,i)=>{ const p=picks?.[i]; if(p===null||p===undefined) return;
@@ -416,9 +440,50 @@ function restore(st){
 /* ---------- FLOW ---------- */
 function initAll(){ for (const k in results) delete results[k]; finished=null; initT1(); initT2(); initT3(); initT4(); initT5(); $("#t6").value=""; $("#t6-count").textContent="0 자"; drawProgress(); }
 function openTasks(){ $("#start").classList.add("hidden"); $("#result").classList.add("hidden"); $("#tasks").classList.remove("hidden"); $("#who").textContent="👤 "+studentName; }
-$("#go").onclick=()=>{ const n=$("#name").value.trim(); if(!n){ $("#name").focus(); return; }
-  studentName=n; openTasks(); initAll(); save(); window.scrollTo({top:0,behavior:"smooth"}); };
-$("#name").addEventListener("keydown",e=>{ if(e.key==="Enter") $("#go").click(); });
+function enter(st){
+  openTasks(); initAll();
+  if (st) restore(st);
+  if (finished && [1,2,3,4,5].every(i=>results[i])){
+    showResult(buildReport(finished.time));
+    $("#send-status").textContent = finished.sent ? "✅ Отчёт уже был отправлен преподавателю" : "Скопируй отчёт и пришли его преподавателю.";
+  }
+  setStatus();
+}
+async function login(n, p, auto){
+  const msg=$("#login-msg"), btn=$("#go");
+  studentName=n; studentPin=p; msg.textContent="Вхожу…"; btn.disabled=true;
+  const local=loadSaved(); const localMine = local && local.name && local.name.toLowerCase()===n.toLowerCase() ? local : null;
+  let st=null;
+  try{
+    st = await cloudLoad(); cloudOk=true;
+    if (!st && localMine) st=localMine;           // новый в облаке, но есть начатое на этом устройстве
+  }catch(e){
+    if (e.message==="wrong_pin"){ btn.disabled=false; studentName=""; studentPin="";
+      if(auto){ clearCred(); msg.textContent=""; } else msg.textContent="❌ Неверный PIN для этого имени. Попробуй ещё раз."; return; }
+    cloudOk=false; st=localMine;                  // нет связи — работаем локально
+  }
+  btn.disabled=false; msg.textContent="";
+  saveCred();
+  if (st) st.name=n;
+  enter(st);
+  save();
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+$("#go").onclick=()=>{
+  const n=$("#name").value.trim(), p=$("#pin").value.trim();
+  if(!n){ $("#name").focus(); return; }
+  if(!/^\d{4,8}$/.test(p)){ $("#login-msg").textContent="PIN — 4 цифры"; $("#pin").focus(); return; }
+  login(n,p,false);
+};
+$("#name").addEventListener("keydown",e=>{ if(e.key==="Enter") $("#pin").focus(); });
+$("#pin").addEventListener("keydown",e=>{ if(e.key==="Enter") $("#go").click(); });
+function logout(){
+  clearTimeout(cloudTimer); clearCred(); clearSaved();
+  studentName=""; studentPin=""; cloudOk=null;
+  $("#tasks").classList.add("hidden"); $("#result").classList.add("hidden"); $("#start").classList.remove("hidden");
+  $("#name").value=""; $("#pin").value=""; $("#login-msg").textContent="";
+}
+$("#logout").onclick=logout; $("#logout2").onclick=logout;
 
 const TITLES={1:"Пары слов",2:"Глаголы",3:"По комнатам",4:"Диалог в магазине",5:"Текст O/X"};
 function buildReport(time){
@@ -455,16 +520,8 @@ $("#reset").onclick=()=>{
   resetArmed=false; $("#reset").textContent="Начать заново"; startOver();
 };
 
-/* ---------- ON LOAD: continue saved attempt ---------- */
-(function(){
-  const st=loadSaved(); if(!st || !st.name) return;
-  studentName=st.name; $("#name").value=st.name;
-  openTasks(); initAll(); restore(st);
-  if (st.finished && [1,2,3,4,5].every(i=>results[i])){
-    finished=st.finished; showResult(buildReport(finished.time));
-    $("#send-status").textContent = finished.sent ? "✅ Отчёт уже был отправлен преподавателю" : "Скопируй отчёт и пришли его преподавателю.";
-  }
-})();
+/* ---------- ON LOAD: автовход ---------- */
+(function(){ const c=loadCred(); if(c && c.n && c.p){ $("#name").value=c.n; login(c.n,c.p,true); } })();
 </script>
 </body>
 </html>
