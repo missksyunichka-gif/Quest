@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>예절 — контрольная по лексике</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&family=Nunito:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f4f1ea; --card:#fffdf8; --ink:#1f2a37; --muted:#6b7280; --line:#e6e0d4;
+  --accent:#2f6f73; --accent-soft:#dcecec; --warm:#e07a5f; --ok:#2e7d4f; --ok-soft:#e3f3e8; --bad:#c0392b; --bad-soft:#fbe5e2;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Nunito","Gowun Dodum",system-ui,sans-serif;line-height:1.55}
+.ko{font-family:"Gowun Dodum","Nunito",sans-serif}
+.wrap{max-width:760px;margin:0 auto;padding:20px 16px 60px}
+header.hero{background:var(--accent);color:#fff;border-radius:22px;padding:26px 22px;position:relative;overflow:hidden}
+header.hero h1{margin:0;font-size:30px;font-family:"Gowun Dodum",sans-serif;letter-spacing:.5px}
+header.hero p{margin:6px 0 0;opacity:.9}
+header.hero svg{position:absolute;right:-10px;bottom:-14px;opacity:.18}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:20px;margin-top:18px}
+h2{margin:0 0 4px;font-size:20px}
+h2 .num{display:inline-grid;place-items:center;min-width:28px;height:28px;padding:0 7px;border-radius:999px;background:var(--warm);color:#fff;font-size:15px;margin-right:8px;vertical-align:2px}
+.hint{color:var(--muted);font-size:14px;margin:0 0 14px}
+input[type=text],input[type=password],textarea,select{font:inherit;border:1.5px solid var(--line);border-radius:10px;padding:9px 11px;background:#fff;color:var(--ink)}
+input[type=text]:focus,input[type=password]:focus,textarea:focus,select:focus{outline:none;border-color:var(--accent)}
+button{font:inherit;font-weight:700;border:0;border-radius:12px;padding:10px 18px;cursor:pointer;background:var(--accent);color:#fff}
+button.ghost{background:var(--accent-soft);color:var(--accent)}
+button:disabled{opacity:.45;cursor:default}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.score{font-weight:800;margin-left:auto;color:var(--accent)}
+.hidden{display:none!important}
+/* progress */
+.progress{display:flex;gap:5px;margin-top:16px}
+.progress span{flex:1;height:7px;border-radius:9px;background:var(--line)}
+.progress span.done{background:var(--warm)}
+/* matching */
+.match{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.col{display:flex;flex-direction:column;gap:8px}
+.tile{border:1.5px solid var(--line);background:#fff;border-radius:12px;padding:10px 12px;cursor:pointer;user-select:none;transition:.15s;font-size:15px}
+.tile.ko{font-size:17px}
+.tile.sel{border-color:var(--accent);background:var(--accent-soft)}
+.tile.done{border-color:var(--ok);background:var(--ok-soft);color:var(--ok);cursor:default}
+.tile.wrong{animation:shake .35s;border-color:var(--bad);background:var(--bad-soft)}
+@keyframes shake{25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+/* choices & typed */
+.q{padding:12px 0;border-bottom:1px dashed var(--line)}
+.q:last-child{border-bottom:0}
+.q .text{font-size:17px;margin-bottom:8px}
+.opts{display:flex;gap:8px;flex-wrap:wrap}
+.opt{border:1.5px solid var(--line);background:#fff;color:var(--ink);font-weight:400;padding:7px 14px;border-radius:999px;font-size:16px}
+.opt.sel{border-color:var(--accent);background:var(--accent-soft);color:var(--accent);font-weight:700}
+.opt.right{border-color:var(--ok);background:var(--ok-soft);color:var(--ok);font-weight:700}
+.opt.wrongpick{border-color:var(--bad);background:var(--bad-soft);color:var(--bad);text-decoration:line-through}
+.q input[type=text]{width:100%;font-size:18px}
+.q input.right{border-color:var(--ok);background:var(--ok-soft)}
+.q input.wrongpick{border-color:var(--bad);background:var(--bad-soft)}
+.fb{margin-top:10px;font-size:14px;color:var(--muted)}
+.q .fb{margin-top:6px;color:var(--bad);font-weight:700}
+/* result */
+.result-big{font-size:46px;font-weight:800;color:var(--accent);margin:4px 0}
+pre.report{white-space:pre-wrap;background:#f6f3ec;border-radius:12px;padding:12px;font-size:14px;font-family:inherit;max-height:420px;overflow:auto}
+@media (max-width:560px){.match{gap:8px}.tile{padding:9px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="hero">
+  <h1 class="ko">예절</h1>
+  <p>Контрольная по лексике · правила поведения и этикет · 109 слов</p>
+  <svg width="150" height="150" viewBox="0 0 100 100" fill="#fff" aria-hidden="true">
+    <circle cx="50" cy="30" r="18"/><rect x="22" y="52" width="56" height="40" rx="10"/>
+  </svg>
+</header>
+
+<!-- ВХОД -->
+<section class="card" id="start">
+  <h2>Вход <span class="ko">로그인</span></h2>
+  <p class="hint">Впиши логин и пароль (4–8 цифр). Первый раз — придумай пароль и запомни его: с ним ты продолжишь работу на любом устройстве. Если ты уже входил(а) в тренажёры, используй те же логин и пароль.</p>
+  <div class="row">
+    <input type="text" id="name" placeholder="Логин" autocomplete="username" style="flex:2;min-width:160px">
+    <input type="password" id="pin" inputmode="numeric" maxlength="8" placeholder="Пароль ••••" autocomplete="current-password" style="flex:1;min-width:110px">
+    <button id="go">Войти</button>
+  </div>
+  <p class="fb" id="login-msg" style="min-height:1.2em"></p>
+</section>
+
+<div id="tasks" class="hidden">
+  <div class="row" style="margin-top:16px">
+    <span class="fb" id="who" style="margin:0"></span>
+    <span class="fb" id="saved" style="margin:0 0 0 auto">💾 Прогресс сохраняется автоматически</span>
+    <button class="ghost" id="reset" style="padding:6px 12px;font-size:14px">Начать заново</button>
+    <button class="ghost" id="logout" style="padding:6px 12px;font-size:14px">Выйти</button>
+  </div>
+  <div class="progress" id="progress"></div>
+
+  <div id="cards"></div>
+
+  <section class="card" style="text-align:center">
+    <button id="finish" style="padding:13px 30px;font-size:17px">Завершить и отправить результат</button>
+    <p class="fb" id="finish-hint">Сначала выполни все задания: в заданиях 1–2 нажми «Проверить», в блоках пар найди все пары.</p>
+  </section>
+</div>
+
+<!-- РЕЗУЛЬТАТ -->
+<section class="card hidden" id="result" style="text-align:center">
+  <h2 class="ko">수고했어요! 👏</h2>
+  <div class="result-big" id="total"></div>
+  <div id="breakdown" class="fb"></div>
+  <pre class="report" id="report" style="text-align:left"></pre>
+  <div class="row" style="justify-content:center">
+    <button id="copy">Скопировать отчёт</button>
+    <button class="ghost" id="again">Пройти ещё раз</button>
+    <button class="ghost" id="logout2">Выйти</button>
+  </div>
+  <p class="fb" id="send-status"></p>
+</section>
+
+</div>
+
+<script>
+/* Внутри просмотрщика claude.ai внешние запросы заблокированы — там работает кнопка «Скопировать отчёт». На GitHub Pages отчёт уходит в Telegram. */
+const SB = { url:"https://nusfkwtmnbhnbnckhrfk.supabase.co", key:"sb_publishable_UmWyFo7ciEc-m9x1ZIfkNw_yeQQAgf8", site:"quest-etiket" };
+const CONFIG = { TELEGRAM_BOT_TOKEN: "9252730022:AAGhfn1DzR05foOHV6zFiTirJlRqSoUCgTU", TELEGRAM_CHAT_ID: "347625701" };
+
+const $ = s => document.querySelector(s);
+const shuffle = a => { a = a.slice(); for (let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; };
+const esc = s => String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const norm = s => String(s).normalize("NFC").replace(/\s+/g,"");
+const results = {};   // номер задания -> {got,max,details,...}
+let studentName = "", studentPin = "";
+
+/* ---------- ДАННЫЕ ---------- */
+/* Все 109 слов из списка преподавателя: [корейский, русский]. Номер слова = позиция в списке (с 1). */
+const W = [["동영상을 찍다", "снимать видео"], ["사진을 몰래 찍다", "тайно фотографировать"], ["줄을 서다", "стоять в очереди"], ["박수를 치다", "аплодировать"], ["자리를 바꾸다", "менять место"], ["관람 예절을 지키다", "соблюдать правила поведения при просмотре представления"], ["전화벨이 울리다", "звонить (о телефонном звонке)"], ["녹음하다", "записывать звук"], ["낙서를 하다", "делать надписи, рисовать на стенах"], ["큰소리로 통화하다", "громко разговаривать по телефону"], ["새치기를 하다", "лезть без очереди"], ["휴대폰을 진동으로 하다", "поставить телефон на вибрацию"], ["휴대폰을 끄다", "выключить телефон"], ["질서를 지키다", "соблюдать порядок"], ["조용히 하다", "вести себя тихо"], ["차례를 기다리다", "ждать своей очереди"], ["떠들다", "шуметь, громко разговаривать"], ["뛰어다니다", "бегать вокруг, бегать туда-сюда"], ["담배를 피우다", "курить"], ["쓰레기를 버리다", "выбрасывать мусор"], ["의자를 발로 차다", "пинать стул"], ["금연", "курение запрещено"], ["주차 금지", "парковка запрещена"], ["출입 금지", "вход запрещён"], ["사진 촬영 금지", "фотографировать запрещено"], ["휴대폰 사용 금지", "пользование мобильным телефоном запрещено"], ["음식물 반입 금지", "вносить еду и напитки запрещено"], ["문에 기대다", "опираться на дверь"], ["뛰다", "бегать"], ["자리를 양보하다", "уступать место"], ["발을 올리다", "класть ноги (куда-либо)"], ["악수하다", "пожимать руки"], ["어른이 말할 때 조용히 하다", "молчать, когда говорит старший"], ["머리를 쓰다듬다", "гладить по голове"], ["눈인사를 하다", "приветствовать взглядом, кивком"], ["혼잣말을 많이 하다", "много разговаривать сам с собой"], ["입식 생활을 하다", "вести сидячий образ жизни за столом и на стуле"], ["출가방을 대신 들어주다", "нести сумку вместо кого-либо"], ["식탁에서 코를 풀다", "сморкаться за обеденным столом"], ["수저", "ложка и палочки"], ["포크", "вилка"], ["젓가락질", "пользование палочками"], ["사과하다", "извиняться"], ["밟다", "наступать, наступить"], ["잡다", "держать, схватить"], ["공연", "выступление, представление"], ["완료", "завершение, выполнение"], ["관람", "просмотр, посещение мероприятия"], ["공연장", "концертный зал, площадка для выступлений"], ["반입하다", "вносить, проносить"], ["관객", "зритель, публика"], ["소리를 내다", "издавать звук, шуметь"], ["내려놓다", "класть, ставить, опускать"], ["이야기를 나누다", "разговаривать, беседовать"], ["예절", "этикет, правила поведения"], ["어른", "взрослый, старший"], ["들다", "брать, поднимать, держать"], ["지키다", "соблюдать, придерживаться; хранить, беречь"], ["야단맞다", "получить выговор, быть отруганным"], ["말을 놓다", "переходить на неформальное общение, обращаться на «ты»"], ["잘 부탁하다", "рассчитывать на хорошее сотрудничество; просить о добром отношении"], ["금방", "скоро, сейчас; только что"], ["각", "каждый, отдельный"], ["여러 가지", "различные вещи, разнообразный"], ["식사 중", "во время еды"], ["이와 같이", "таким образом, вот так"], ["서로", "друг друга, между собой"], ["냄새가 나다", "пахнуть, иметь запах"], ["급한 전화", "срочный телефонный звонок"], ["누구나", "кто угодно, любой"], ["규칙", "правило"], ["선택", "выбор"], ["분위기", "атмосфера"], ["졸업식", "церемония окончания школы/университета"], ["공연 예의", "правила поведения на представлении"], ["그릇", "миска, посуда"], ["시키다", "заказывать; заставлять"], ["무료", "бесплатный"], ["밥그릇", "миска для риса, пиала"], ["식탁", "обеденный стол"], ["차이", "разница, различие"], ["일어서다", "вставать, подниматься"], ["반말을 하다", "говорить на неформальном языке"], ["존댓말을 하다", "говорить в вежливой форме"], ["다리를 꼬지 않다", "не закидывать ногу на ногу"], ["고개를 돌리고 마시다", "пить, отвернув голову"], ["좌식 생활을 하다", "вести сидячий образ жизни на полу"], ["눈을 마주보다", "смотреть в глаза"], ["한 손으로 받다", "принимать одной рукой"], ["두 손으로 드리다", "передавать обеими руками"], ["손을 흔들면서 인사하다", "приветствовать, махая рукой"], ["이름을 부르다", "называть по имени"], ["신발을 벗다", "снимать обувь"], ["볼을 만지다", "трогать щёку"], ["성(이름)이 바뀌다", "изменить фамилию (имя)"], ["늦잠을 자는 시간이 있다", "иметь время, когда спишь допоздна"], ["고개를 숙여서 인사하다", "кланяться при приветствии"], ["물과 반찬이 무료이다", "вода и гарниры бесплатные"], ["밥그릇을 들고 먹다", "есть, держа миску с рисом"], ["놀라다", "удивляться, быть поражённым"], ["창피하다", "испытывать стыд, быть неловко"], ["당황하다", "растеряться, смутиться"], ["황당하다", "быть ошарашенным, не верить своим глазам"], ["부끄럽다", "стыдиться, смущаться"], ["민망하다", "чувствовать неловкость"], ["웃음이 나다", "хотеть смеяться, засмеяться"], ["얼굴이 빨개지다", "покраснеть"], ["손에 땀이 나다", "ладони вспотели"], ["가슴이 두근거리다", "сердце сильно бьётся, сердце колотится"]];
+/* 10 блоков для «найди пару»: каждое слово ровно в одном блоке; похожие по смыслу слова разнесены по разным блокам. */
+const BLOCKS = [[1, 3, 4, 7, 22, 28, 40, 55, 62, 82, 101], [2, 5, 8, 13, 16, 23, 29, 41, 56, 63, 102], [6, 9, 12, 17, 24, 30, 42, 57, 64, 83, 103], [10, 14, 18, 25, 31, 43, 45, 65, 76, 84, 104], [11, 15, 19, 26, 32, 44, 46, 66, 79, 85, 105], [20, 21, 27, 33, 47, 58, 67, 77, 80, 86, 106], [34, 35, 48, 52, 59, 61, 68, 71, 78, 87, 107], [36, 37, 49, 53, 60, 69, 72, 88, 89, 98, 108], [38, 39, 50, 51, 54, 70, 73, 90, 91, 99, 109], [74, 75, 81, 92, 93, 94, 95, 96, 97, 100]];
+const NB = BLOCKS.length;
+const T_TYPED = 1, T_CHOICE = 2, T_MATCH0 = 3;           // задания: 1 — диктант, 2 — выбор, 3… — блоки пар
+const TASK_IDS = Array.from({length:2+NB},(_,i)=>i+1);
+
+/* Задание 1: напиши по-корейски (a — допустимые ответы, пробелы не важны) */
+const TYPED = [
+  {p:"правило", a:["규칙"]},
+  {p:"этикет, правила поведения", a:["예절"]},
+  {p:"атмосфера", a:["분위기"]},
+  {p:"церемония окончания школы / университета", a:["졸업식"]},
+  {p:"вилка", a:["포크"]},
+  {p:"концертный зал, площадка для выступлений", a:["공연장"]},
+  {p:"взрослый, старший", a:["어른"]},
+  {p:"аплодировать", a:["박수를 치다","박수치다"]},
+  {p:"курить", a:["담배를 피우다","담배피우다"]},
+  {p:"выбрасывать мусор", a:["쓰레기를 버리다","쓰레기버리다"]}
+];
+/* Задание 2: выбери правильный вариант [вопрос, варианты, номер правильного] */
+const CHOICE = [
+  ["«зритель, публика»", ["관객","공연","그릇","차이"], 0],
+  ["«обеденный стол»", ["식탁","그릇","밥그릇","수저"], 0],
+  ["«ложка и палочки»", ["젓가락질","수저","그릇","식탁"], 1],
+  ["«разница, различие»", ["선택","무료","차이","관람"], 2],
+  ["«бесплатный»", ["무료","완료","금방","서로"], 0],
+  ["«выбор»", ["차이","관람","무료","선택"], 3],
+  ["«курение запрещено»", ["주차 금지","금연","출입 금지","사진 촬영 금지"], 1],
+  ["«вносить еду и напитки запрещено»", ["휴대폰 사용 금지","금연","음식물 반입 금지","출입 금지"], 2],
+  ["Что должен сделать зритель перед началом представления, чтобы не мешать другим?", ["동영상을 찍다","휴대폰을 끄다","큰소리로 통화하다","낙서를 하다"], 1],
+  ["Что НЕЛЬЗЯ делать на представлении?", ["박수를 치다","조용히 하다","사진을 몰래 찍다","휴대폰을 진동으로 하다"], 2],
+  ["Человек пролез вперёд, не дожидаясь своей очереди. Он …", ["줄을 서다","차례를 기다리다","새치기를 하다","질서를 지키다"], 2],
+  ["«извиняться»", ["야단맞다","사과하다","놀라다","시키다"], 1],
+  ["«получить выговор»", ["사과하다","시키다","반입하다","야단맞다"], 3],
+  ["«уступать место»", ["자리를 바꾸다","발을 올리다","자리를 양보하다","문에 기대다"], 2],
+  ["Как правильно передать что-то старшему по возрасту?", ["한 손으로 받다","두 손으로 드리다","볼을 만지다","머리를 쓰다듬다"], 1],
+  ["Как пьют алкоголь в присутствии старшего?", ["고개를 돌리고 마시다","밥그릇을 들고 먹다","신발을 벗다","눈인사를 하다"], 0],
+  ["Что не принято делать за столом?", ["다리를 꼬지 않다","어른이 말할 때 조용히 하다","식탁에서 코를 풀다","자리를 양보하다"], 2],
+  ["입식 생활을 하다 — это:", ["вести жизнь за столом и на стуле","вести жизнь, сидя на полу","много разговаривать сам с собой","приветствовать взглядом, кивком"], 0],
+  ["좌식 생활을 하다 — это:", ["приветствовать взглядом, кивком","вести жизнь за столом и на стуле","вести жизнь, сидя на полу","много разговаривать сам с собой"], 2],
+  ["«ладони вспотели»", ["얼굴이 빨개지다","가슴이 두근거리다","손에 땀이 나다","웃음이 나다"], 2]
+];
+
+/* ---------- ПОСТРОЕНИЕ КАРТОЧЕК ---------- */
+function buildCards(){
+  let h = `
+  <section class="card" data-task="1">
+    <h2><span class="num">1</span><span class="ko">한국어로 쓰세요</span></h2>
+    <p class="hint">Напиши слово по-корейски (в словарной форме). Пробелы не важны.</p>
+    <div id="t1"></div>
+    <div class="row" style="margin-top:12px"><button id="t1-check">Проверить</button><span class="score" id="t1-score"></span></div>
+  </section>
+  <section class="card" data-task="2">
+    <h2><span class="num">2</span><span class="ko">알맞은 것을 고르세요</span></h2>
+    <p class="hint">Выбери правильный вариант.</p>
+    <div id="t2"></div>
+    <div class="row" style="margin-top:12px"><button id="t2-check">Проверить</button><span class="score" id="t2-score"></span></div>
+  </section>`;
+  for (let b=0;b<NB;b++){
+    h += `
+  <section class="card" data-task="${T_MATCH0+b}">
+    <h2><span class="num">${T_MATCH0+b}</span><span class="ko">짝 찾기 ${b+1}/${NB}</span></h2>
+    <p class="hint">Нажми слово слева, потом его перевод справа.</p>
+    <div class="match"><div class="col" id="mk${b}"></div><div class="col" id="mr${b}"></div></div>
+    <div class="row" style="margin-top:12px"><span class="fb" id="mfb${b}" style="margin:0">Ошибок: 0</span><span class="score" id="msc${b}"></span></div>
+  </section>`;
+  }
+  $("#cards").innerHTML = h;
+}
+
+/* ---------- ПРОГРЕСС ---------- */
+function drawProgress(){
+  const p = $("#progress"); p.innerHTML = "";
+  TASK_IDS.forEach(i=>{ const s=document.createElement("span"); if(results[i]) s.className="done"; p.appendChild(s); });
+  const ready = TASK_IDS.every(i=>results[i]);
+  $("#finish").disabled = !ready;
+  $("#finish-hint").classList.toggle("hidden", ready);
+}
+
+/* ---------- ЗАДАНИЕ 1: ДИКТАНТ ---------- */
+function initT1(){
+  $("#t1").innerHTML = TYPED.map((t,i)=>`<div class="q"><div class="text">${i+1}. ${esc(t.p)}</div><input type="text" class="ko" data-i="${i}" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="한국어로 쓰세요"><div class="fb hidden"></div></div>`).join("");
+  $("#t1-score").textContent = "";
+  $("#t1").oninput = ()=>save();
+}
+function checkT1(){
+  if (results[T_TYPED]) return;
+  let got=0; const wrong=[];
+  [...document.querySelectorAll("#t1 input")].forEach(inp=>{
+    const t=TYPED[+inp.dataset.i], v=norm(inp.value), ok=t.a.some(x=>norm(x)===v);
+    inp.disabled=true; inp.classList.add(ok?"right":"wrongpick");
+    if (ok) got++; else {
+      const fb=inp.parentElement.querySelector(".fb"); fb.textContent="Правильно: "+t.a[0]; fb.classList.remove("hidden");
+      wrong.push({p:t.p, typed:inp.value.trim(), right:t.a[0]});
+    }
+  });
+  results[T_TYPED]={got,max:TYPED.length,wrong};
+  $("#t1-score").textContent=`${got} / ${TYPED.length}`; drawProgress(); save();
+}
+
+/* ---------- ЗАДАНИЕ 2: ВЫБОР ---------- */
+const choiceItems = CHOICE.map(([s,opts,ans])=>({s,opts,ans}));
+function initT2(){
+  const box=$("#t2"); box.innerHTML="";
+  choiceItems.forEach((it,i)=>{
+    const q=document.createElement("div"); q.className="q";
+    q.innerHTML=`<div class="text ko">${i+1}. ${esc(it.s)}</div>`;
+    const opts=document.createElement("div"); opts.className="opts ko";
+    it.opts.forEach((o,j)=>{ const b=document.createElement("button"); b.className="opt"; b.textContent=o;
+      b.onclick=()=>{ if(q.dataset.locked) return; opts.querySelectorAll(".opt").forEach(x=>x.classList.remove("sel")); b.classList.add("sel"); q.dataset.pick=j; save(); };
+      opts.appendChild(b); });
+    q.appendChild(opts); box.appendChild(q);
+  });
+  $("#t2-score").textContent="";
+}
+function checkT2(){
+  if (results[T_CHOICE]) return;
+  const qs=[...document.querySelectorAll("#t2 .q")];
+  if (qs.some(q=>q.dataset.pick===undefined)) { $("#t2-score").textContent="Ответь на все вопросы"; return; }
+  let got=0; const wrong=[];
+  qs.forEach((q,i)=>{ q.dataset.locked=1; const pick=+q.dataset.pick, it=choiceItems[i];
+    q.querySelectorAll(".opt").forEach((b,j)=>{ b.classList.remove("sel"); if(j===it.ans) b.classList.add("right"); else if(j===pick) b.classList.add("wrongpick"); });
+    if(pick===it.ans) got++; else wrong.push({n:i+1, q:it.s, pick:it.opts[pick], right:it.opts[it.ans]});
+  });
+  results[T_CHOICE]={got,max:choiceItems.length,wrong};
+  $("#t2-score").textContent=`${got} / ${choiceItems.length}`; drawProgress(); save();
+}
+
+/* ---------- ЗАДАНИЯ 3…: ПАРЫ (все 109 слов) ---------- */
+const M = [];  // состояние блоков: {sel, errs:{номерСлова:кол-во}, done:Set}
+function updMatchFb(b){ const n=Object.values(M[b].errs).reduce((a,x)=>a+x,0); $("#mfb"+b).textContent="Ошибок: "+n; }
+function finishMatch(b){
+  const idxs=BLOCKS[b], weak=idxs.filter(i=>M[b].errs[i]);
+  const got=idxs.length-weak.length;
+  results[T_MATCH0+b]={got,max:idxs.length,weak:weak.map(i=>W[i-1][0])};
+  $("#msc"+b).textContent=`${got} / ${idxs.length}`; drawProgress(); save();
+}
+function initMatch(b){
+  M[b]={sel:null,errs:{},done:new Set()};
+  const ko=$("#mk"+b), ru=$("#mr"+b); ko.innerHTML=""; ru.innerHTML="";
+  $("#mfb"+b).textContent="Ошибок: 0"; $("#msc"+b).textContent="";
+  const idxs=BLOCKS[b];
+  shuffle(idxs).forEach(i=>{ const d=document.createElement("div"); d.className="tile ko"; d.textContent=W[i-1][0]; d.dataset.i=i; ko.appendChild(d); });
+  shuffle(idxs).forEach(i=>{ const d=document.createElement("div"); d.className="tile"; d.textContent=W[i-1][1]; d.dataset.i=i; ru.appendChild(d); });
+  ko.onclick=e=>{ const t=e.target.closest(".tile"); if(!t||t.classList.contains("done")) return;
+    ko.querySelectorAll(".sel").forEach(x=>x.classList.remove("sel")); t.classList.add("sel"); M[b].sel=t; };
+  ru.onclick=e=>{ const t=e.target.closest(".tile"), s=M[b].sel; if(!t||t.classList.contains("done")||!s) return;
+    if (t.dataset.i===s.dataset.i){
+      t.classList.add("done"); s.classList.remove("sel"); s.classList.add("done"); M[b].done.add(+t.dataset.i); M[b].sel=null; save();
+      if (M[b].done.size===idxs.length) finishMatch(b);
+    } else {
+      const i=s.dataset.i; M[b].errs[i]=(M[b].errs[i]||0)+1; updMatchFb(b);
+      t.classList.remove("wrong"); void t.offsetWidth; t.classList.add("wrong"); save();
+    }
+  };
+}
+
+/* ---------- СОХРАНЕНИЕ / ВОССТАНОВЛЕНИЕ ---------- */
+const KEY="etiket-progress-v1", CRED="etiket-login-v1";
+let restoring=false, finished=null;
+function collect(){
+  return {
+    name: studentName,
+    t1: { values:[...document.querySelectorAll("#t1 input")].map(x=>x.value), checked:!!results[T_TYPED] },
+    t2: { picks:[...document.querySelectorAll("#t2 .q")].map(q=>q.dataset.pick ?? null), checked:!!results[T_CHOICE] },
+    m: M.map(s=>({done:[...s.done], errs:s.errs})),
+    finished
+  };
+}
+/* облако (Supabase): load_progress / save_progress с проверкой пароля */
+let cloudOk=null, cloudTimer=null;
+async function rpc(fn, body){
+  const r=await fetch(`${SB.url}/rest/v1/rpc/${fn}`,{method:"POST",headers:{"Content-Type":"application/json",apikey:SB.key},body:JSON.stringify(body)});
+  const t=await r.text();
+  if(!r.ok){ throw new Error(/wrong_pin/.test(t)?"wrong_pin":"server"); }
+  return t?JSON.parse(t):null;
+}
+const cloudLoad = ()=>rpc("load_progress",{p_site:SB.site,p_name:studentName,p_pin:studentPin});
+const cloudSave = st=>rpc("save_progress",{p_site:SB.site,p_name:studentName,p_pin:studentPin,p_state:st});
+function setStatus(){ const el=$("#saved");
+  el.textContent = cloudOk===true ? "☁️✓ Сохранено в облаке" : cloudOk===false ? "⚠️ Сохранено только на этом устройстве" : "💾 Сохраняю…"; }
+function save(){
+  if (restoring || !studentName) return;
+  const st=collect();
+  try { localStorage.setItem(KEY, JSON.stringify(st)); } catch(e){}
+  cloudOk=null; setStatus();
+  clearTimeout(cloudTimer);
+  cloudTimer=setTimeout(async()=>{ try{ await cloudSave(collect()); cloudOk=true; }catch(e){ cloudOk=false; } setStatus(); },700);
+}
+function loadSaved(){ try { return JSON.parse(localStorage.getItem(KEY)); } catch(e){ return null; } }
+function clearSaved(){ try { localStorage.removeItem(KEY); } catch(e){} }
+function saveCred(){ try{ localStorage.setItem(CRED, JSON.stringify({n:studentName,p:studentPin})); }catch(e){} }
+function loadCred(){ try{ return JSON.parse(localStorage.getItem(CRED)); }catch(e){ return null; } }
+function clearCred(){ try{ localStorage.removeItem(CRED); }catch(e){} }
+
+function restore(st){
+  restoring=true;
+  const inputs=[...document.querySelectorAll("#t1 input")];
+  (st.t1?.values||[]).forEach((v,i)=>{ if(inputs[i]) inputs[i].value=v; });
+  if (st.t1?.checked) checkT1();
+  [...document.querySelectorAll("#t2 .q")].forEach((q,i)=>{ const p=st.t2?.picks?.[i]; if(p===null||p===undefined) return;
+    q.dataset.pick=p; q.querySelectorAll(".opt")[+p]?.classList.add("sel"); });
+  if (st.t2?.checked) checkT2();
+  (st.m||[]).forEach((s,b)=>{ if(!M[b]) return;
+    const done=new Set(s.done||[]); M[b].errs=s.errs||{}; M[b].done=done;
+    document.querySelectorAll(`#mk${b} .tile, #mr${b} .tile`).forEach(t=>{ if(done.has(+t.dataset.i)) t.classList.add("done"); });
+    updMatchFb(b);
+    if (done.size===BLOCKS[b].length) finishMatch(b);
+  });
+  finished=st.finished||null;
+  drawProgress();
+  restoring=false;
+}
+
+/* ---------- ХОД РАБОТЫ ---------- */
+function initAll(){
+  for (const k in results) delete results[k];
+  finished=null; buildCards(); initT1(); initT2();
+  M.length=0; for (let b=0;b<NB;b++) initMatch(b);
+  $("#t1-check").onclick=checkT1; $("#t2-check").onclick=checkT2;
+  drawProgress();
+}
+function openTasks(){ $("#start").classList.add("hidden"); $("#result").classList.add("hidden"); $("#tasks").classList.remove("hidden"); $("#who").textContent="👤 "+studentName; }
+function enter(st){
+  openTasks(); initAll();
+  if (st) restore(st);
+  if (finished && TASK_IDS.every(i=>results[i])){
+    showResult(buildReport(finished.time));
+    $("#send-status").textContent = finished.sent ? "✅ Отчёт уже был отправлен преподавателю" : "Скопируй отчёт и пришли его преподавателю.";
+  }
+  setStatus();
+}
+async function login(n, p, auto){
+  const msg=$("#login-msg"), btn=$("#go");
+  studentName=n; studentPin=p; msg.textContent="Вхожу…"; btn.disabled=true;
+  const local=loadSaved(); const localMine = local && local.name && local.name.toLowerCase()===n.toLowerCase() ? local : null;
+  let st=null;
+  try{
+    st = await cloudLoad(); cloudOk=true;
+    if (!st && localMine) st=localMine;
+  }catch(e){
+    if (e.message==="wrong_pin"){ btn.disabled=false; studentName=""; studentPin="";
+      if(auto){ clearCred(); msg.textContent=""; } else msg.textContent="❌ Неверный пароль для этого логина. Попробуй ещё раз."; return; }
+    cloudOk=false; st=localMine;
+  }
+  btn.disabled=false; msg.textContent="";
+  saveCred();
+  if (st) st.name=n;
+  enter(st);
+  save();
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+$("#go").onclick=()=>{
+  const n=$("#name").value.trim(), p=$("#pin").value.trim();
+  if(!n){ $("#name").focus(); return; }
+  if(!/^\d{4,8}$/.test(p)){ $("#login-msg").textContent="Пароль — от 4 до 8 цифр"; $("#pin").focus(); return; }
+  login(n,p,false);
+};
+$("#name").addEventListener("keydown",e=>{ if(e.key==="Enter") $("#pin").focus(); });
+$("#pin").addEventListener("keydown",e=>{ if(e.key==="Enter") $("#go").click(); });
+function logout(){
+  clearTimeout(cloudTimer); clearCred(); clearSaved();
+  studentName=""; studentPin=""; cloudOk=null;
+  $("#tasks").classList.add("hidden"); $("#result").classList.add("hidden"); $("#start").classList.remove("hidden");
+  $("#name").value=""; $("#pin").value=""; $("#login-msg").textContent="";
+}
+$("#logout").onclick=logout; $("#logout2").onclick=logout;
+
+/* ---------- ОТЧЁТ ---------- */
+function buildReport(time){
+  const r1=results[T_TYPED], r2=results[T_CHOICE];
+  let mGot=0, mMax=0; const mLines=[], mWeak=[];
+  for (let b=0;b<NB;b++){ const r=results[T_MATCH0+b]; mGot+=r.got; mMax+=r.max;
+    mLines.push(`${b+1}: ${r.got}/${r.max}`); if(r.weak.length) mWeak.push(`  блок ${b+1}: ${r.weak.join(", ")}`); }
+  const got=r1.got+r2.got+mGot, max=r1.max+r2.max+mMax, pct=Math.round(got/max*100);
+  const L=[];
+  L.push("📋 예절 — контрольная по лексике (109 слов)", `👤 ${studentName}`, `🕒 ${time}`, "",
+    `Итог: ${got}/${max} (${pct}%)`,
+    `1. Диктант (RU→KO): ${r1.got}/${r1.max}`,
+    `2. Выбор: ${r2.got}/${r2.max}`,
+    `3. Пары слов (KO→RU): ${mGot}/${mMax}  [блоки ${mLines.join(" · ")}]`);
+  if (r1.wrong.length){ L.push("", "❗ Диктант — ошибки:"); r1.wrong.forEach(w=>L.push(`• «${w.p}»: написал(а) «${w.typed||"—"}», правильно «${w.right}»`)); }
+  if (r2.wrong.length){ L.push("", "❗ Выбор — ошибки:"); r2.wrong.forEach(w=>L.push(`• №${w.n} ${w.q.length>45?w.q.slice(0,45)+"…":w.q}: выбрано «${w.pick}», правильно «${w.right}»`)); }
+  if (mWeak.length){ L.push("", "❗ Пары — слова, в которых были ошибки:", ...mWeak); }
+  if (!r1.wrong.length && !r2.wrong.length && !mWeak.length) L.push("", "✅ Ошибок нет");
+  return {got,max,pct,text:L.join("\n")};
+}
+function showResult(r){
+  $("#total").textContent=`${r.got} / ${r.max}`;
+  $("#breakdown").textContent = r.pct>=90?"훌륭해요! Отлично!": r.pct>=70?"잘했어요! Хорошо!":"Повтори слова и попробуй ещё раз 💪";
+  $("#report").textContent=r.text;
+  $("#start").classList.add("hidden"); $("#tasks").classList.add("hidden"); $("#result").classList.remove("hidden");
+}
+function chunkText(text, lim=3800){
+  const out=[]; let cur="";
+  for (const line of text.split("\n")){ if ((cur+line+"\n").length>lim){ out.push(cur); cur=""; } cur+=line+"\n"; }
+  if (cur.trim()) out.push(cur);
+  return out;
+}
+$("#finish").onclick=async()=>{
+  finished={ time:new Date().toLocaleString("ru-RU"), sent:false };
+  const r=buildReport(finished.time); showResult(r); window.scrollTo({top:0,behavior:"smooth"});
+  const st=$("#send-status"); st.textContent="";
+  if (CONFIG.TELEGRAM_BOT_TOKEN && CONFIG.TELEGRAM_CHAT_ID){
+    try{
+      let ok=true;
+      for (const part of chunkText(r.text)){
+        const res=await fetch(`https://api.telegram.org/bot${CONFIG.TELEGRAM_BOT_TOKEN}/sendMessage`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({chat_id:CONFIG.TELEGRAM_CHAT_ID,text:part})});
+        if(!res.ok){ ok=false; break; }
+      }
+      finished.sent=ok; st.textContent = ok?"✅ Отчёт отправлен преподавателю":"Не удалось отправить — скопируй отчёт и пришли преподавателю.";
+    } catch(e){ st.textContent="Не удалось отправить — скопируй отчёт и пришли преподавателю."; }
+  } else st.textContent="Скопируй отчёт и пришли его преподавателю.";
+  save();
+};
+$("#copy").onclick=async()=>{ try{ await navigator.clipboard.writeText($("#report").textContent); $("#copy").textContent="Скопировано ✓"; }
+  catch(e){ const r=document.createRange(); r.selectNodeContents($("#report")); const s=getSelection(); s.removeAllRanges(); s.addRange(r); $("#copy").textContent="Выделено — нажми Ctrl+C"; } };
+function startOver(){ clearSaved(); $("#copy").textContent="Скопировать отчёт"; openTasks(); initAll(); save(); window.scrollTo({top:0,behavior:"smooth"}); }
+$("#again").onclick=startOver;
+let resetArmed=false;
+$("#reset").onclick=()=>{
+  if(!resetArmed){ resetArmed=true; $("#reset").textContent="Точно? Ответы сотрутся — нажми ещё раз"; setTimeout(()=>{resetArmed=false;$("#reset").textContent="Начать заново";},4000); return; }
+  resetArmed=false; $("#reset").textContent="Начать заново"; startOver();
+};
+
+/* ---------- ПРИ ЗАГРУЗКЕ: автовход ---------- */
+(function(){ const c=loadCred(); if(c && c.n && c.p){ $("#name").value=c.n; login(c.n,c.p,true); } })();
+</script>
+</body>
+</html>
