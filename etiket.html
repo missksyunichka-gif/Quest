@@ -32,9 +32,21 @@ button:disabled{opacity:.45;cursor:default}
 .score{font-weight:800;margin-left:auto;color:var(--accent)}
 .hidden{display:none!important}
 /* progress */
-.progress{display:flex;gap:5px;margin-top:16px}
+.progress{display:flex;gap:5px;margin-top:12px}
 .progress span{flex:1;height:7px;border-radius:9px;background:var(--line)}
 .progress span.done{background:var(--warm)}
+/* timer */
+.timerbox{position:sticky;top:8px;z-index:20;margin-top:14px;background:var(--card);border:1.5px solid var(--accent);border-radius:16px;padding:10px 14px;box-shadow:0 4px 14px rgba(0,0,0,.08)}
+.timerbox .tm{font-size:24px;font-weight:800;color:var(--accent);font-variant-numeric:tabular-nums}
+.timerbox .bar{height:6px;border-radius:9px;background:var(--line);margin-top:6px;overflow:hidden}
+.timerbox .bar i{display:block;height:100%;width:0;background:var(--accent);transition:width .5s linear}
+.timerbox.warn{border-color:#e0a050;background:#fff6e8}
+.timerbox.warn .tm{color:#b9731a}.timerbox.warn .bar i{background:#e0a050}
+.timerbox.over{border-color:var(--bad);background:var(--bad-soft)}
+.timerbox.over .tm{color:var(--bad)}.timerbox.over .bar i{background:var(--bad)}
+.timerbox .overmsg{font-size:13px;color:var(--bad);font-weight:700;margin-top:4px}
+.plan{margin:8px 0 14px;padding-left:20px;font-size:15px}
+.plan li{margin:2px 0}
 /* matching */
 .match{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .col{display:flex;flex-direction:column;gap:8px}
@@ -49,16 +61,23 @@ button:disabled{opacity:.45;cursor:default}
 .q{padding:12px 0;border-bottom:1px dashed var(--line)}
 .q:last-child{border-bottom:0}
 .q .text{font-size:17px;margin-bottom:8px}
+.q .hintw{color:var(--accent);font-weight:700;white-space:nowrap}
 .opts{display:flex;gap:8px;flex-wrap:wrap}
+.opts.stack{flex-direction:column;align-items:stretch}
 .opt{border:1.5px solid var(--line);background:#fff;color:var(--ink);font-weight:400;padding:7px 14px;border-radius:999px;font-size:16px}
+.opts.stack .opt{border-radius:12px;text-align:left}
 .opt.sel{border-color:var(--accent);background:var(--accent-soft);color:var(--accent);font-weight:700}
 .opt.right{border-color:var(--ok);background:var(--ok-soft);color:var(--ok);font-weight:700}
 .opt.wrongpick{border-color:var(--bad);background:var(--bad-soft);color:var(--bad);text-decoration:line-through}
 .q input[type=text]{width:100%;font-size:18px}
+.q input.fix{margin-top:8px;font-size:16px}
 .q input.right{border-color:var(--ok);background:var(--ok-soft)}
 .q input.wrongpick{border-color:var(--bad);background:var(--bad-soft)}
+textarea.big{width:100%;min-height:110px;font-size:17px;resize:vertical;line-height:1.6}
+.q textarea.big{min-height:70px}
 .fb{margin-top:10px;font-size:14px;color:var(--muted)}
 .q .fb{margin-top:6px;color:var(--bad);font-weight:700}
+.q .fb.model{color:var(--muted);font-weight:400}
 /* result */
 .result-big{font-size:46px;font-weight:800;color:var(--accent);margin:4px 0}
 pre.report{white-space:pre-wrap;background:#f6f3ec;border-radius:12px;padding:12px;font-size:14px;font-family:inherit;max-height:420px;overflow:auto}
@@ -70,7 +89,7 @@ pre.report{white-space:pre-wrap;background:#f6f3ec;border-radius:12px;padding:12
 
 <header class="hero">
   <h1 class="ko">예절</h1>
-  <p>Контрольная по лексике · 109 слов · без перевода: только объяснения по-корейски</p>
+  <p>Контрольная по лексике · 30 минут · без перевода: только объяснения по-корейски</p>
   <svg width="150" height="150" viewBox="0 0 100 100" fill="#fff" aria-hidden="true">
     <circle cx="50" cy="30" r="18"/><rect x="22" y="52" width="56" height="40" rx="10"/>
   </svg>
@@ -95,14 +114,39 @@ pre.report{white-space:pre-wrap;background:#f6f3ec;border-radius:12px;padding:12
     <button class="ghost" id="reset" style="padding:6px 12px;font-size:14px">Начать заново</button>
     <button class="ghost" id="logout" style="padding:6px 12px;font-size:14px">Выйти</button>
   </div>
-  <div class="progress" id="progress"></div>
 
-  <div id="cards"></div>
-
-  <section class="card" style="text-align:center">
-    <button id="finish" style="padding:13px 30px;font-size:17px">Завершить и отправить результат</button>
-    <p class="fb" id="finish-hint">Сначала выполни все задания: в заданиях 1–2 нажми «Проверить», в блоках пар найди все пары.</p>
+  <!-- ПЕРЕД СТАРТОМ -->
+  <section class="card" id="gate">
+    <h2>Перед началом <span class="ko">시작하기 전에</span></h2>
+    <p class="hint">На всю работу — <b>30 минут</b>. Таймер запустится после кнопки «Начать» и идёт, пока страница открыта на экране. Если выйдешь, время сохранится. Словарь и переводчик не нужны: проверяем, что ты запомнил(а) и умеешь использовать сам(а).</p>
+    <ol class="plan">
+      <li>Вспомни слово по объяснению — ~3 мин</li>
+      <li>Выбери правильный вариант — ~3 мин</li>
+      <li>3–5. Найди пары — ~4 мин</li>
+      <li>Закончи предложение — ~4 мин</li>
+      <li>Найди неправильное предложение — ~3 мин</li>
+      <li>Что сказать в ситуации — ~4 мин</li>
+      <li>Мини-текст — ~5 мин</li>
+    </ol>
+    <p class="hint">Всего около 26 минут + 4 минуты запаса. Если время закончится, работа не заблокируется: нажми «Завершить», незаполненное засчитается как ошибка.</p>
+    <button id="begin" style="padding:13px 30px;font-size:17px">Начать — 30:00</button>
   </section>
+
+  <div id="run" class="hidden">
+    <div class="timerbox" id="timerbox">
+      <div class="row"><span class="tm" id="tm">⏱ 30:00</span><span class="fb" id="tmhint" style="margin:0 0 0 auto">осталось</span></div>
+      <div class="bar"><i id="tmbar"></i></div>
+      <div class="overmsg hidden" id="overmsg">Время вышло. Нажми «Завершить» внизу — незаполненное засчитается как ошибка.</div>
+    </div>
+    <div class="progress" id="progress"></div>
+
+    <div id="cards"></div>
+
+    <section class="card" style="text-align:center">
+      <button id="finish" style="padding:13px 30px;font-size:17px">Завершить и отправить результат</button>
+      <p class="fb" id="finish-hint">Сначала выполни все задания: нажми «Проверить» / «Готово» в каждом и найди все пары.</p>
+    </section>
+  </div>
 </div>
 
 <!-- РЕЗУЛЬТАТ -->
@@ -130,56 +174,114 @@ const $ = s => document.querySelector(s);
 const shuffle = a => { a = a.slice(); for (let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; };
 const esc = s => String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const norm = s => String(s).normalize("NFC").replace(/\s+/g,"");
-const results = {};   // номер задания -> {got,max,details,...}
+const normA = s => norm(s).replace(/[.,!?~…"'«»]/g,"");
+const results = {};   // номер задания -> {got,max,...}
 let studentName = "", studentPin = "";
 
 /* ---------- ДАННЫЕ ---------- */
-/* Все 109 слов из списка преподавателя: [корейский, русский]. Номер слова = позиция в списке (с 1). */
 const W = [["동영상을 찍다", "카메라나 휴대폰으로 움직이는 장면을 기록하다"], ["사진을 몰래 찍다", "다른 사람이 모르게 사진을 찍다"], ["줄을 서다", "순서대로 한 줄로 서 있다"], ["박수를 치다", "좋아서 두 손을 마주쳐 소리를 내다"], ["자리를 바꾸다", "앉아 있는 곳을 다른 곳으로 옮기다"], ["관람 예절을 지키다", "공연이나 영화를 볼 때 다른 사람을 생각해서 규칙대로 행동하다"], ["전화벨이 울리다", "전화가 왔다고 소리가 나다"], ["녹음하다", "목소리나 소리를 기계에 저장하다"], ["낙서를 하다", "벽이나 책상에 아무 글이나 그림을 함부로 쓰다"], ["큰소리로 통화하다", "전화로 이야기할 때 목소리를 크게 하다"], ["새치기를 하다", "기다리는 사람들 앞에 몰래 끼어들다"], ["휴대폰을 진동으로 하다", "휴대폰이 소리 대신 떨리게 하다"], ["휴대폰을 끄다", "휴대폰의 전원을 꺼서 작동하지 않게 하다"], ["질서를 지키다", "정해진 순서와 규칙을 따라 행동하다"], ["조용히 하다", "소리를 내지 않다"], ["차례를 기다리다", "내 순서가 올 때까지 기다리다"], ["떠들다", "여러 사람이 시끄럽게 이야기하다"], ["뛰어다니다", "이쪽저쪽으로 빨리 달리다"], ["담배를 피우다", "담배에 불을 붙여 연기를 마시다"], ["쓰레기를 버리다", "필요 없는 물건을 쓰레기통에 넣다"], ["의자를 발로 차다", "앞 의자를 발로 세게 치다"], ["금연", "담배를 피우면 안 된다는 뜻"], ["주차 금지", "차를 세워 두면 안 된다는 뜻"], ["출입 금지", "들어가면 안 된다는 뜻"], ["사진 촬영 금지", "카메라로 찍으면 안 된다는 뜻"], ["휴대폰 사용 금지", "전화기를 쓰면 안 된다는 뜻"], ["음식물 반입 금지", "먹을 것을 가지고 들어가면 안 된다는 뜻"], ["문에 기대다", "몸을 문에 대고 서다"], ["뛰다", "두 발을 빠르게 움직여 달리다"], ["자리를 양보하다", "내 자리를 다른 사람이 앉게 주다"], ["발을 올리다", "발을 의자나 책상 위에 놓다"], ["악수하다", "인사할 때 서로 손을 잡고 흔들다"], ["어른이 말할 때 조용히 하다", "나이 많은 사람이 이야기할 때 끝까지 말없이 듣다"], ["머리를 쓰다듬다", "손으로 머리를 부드럽게 만지다"], ["눈인사를 하다", "말 없이 눈으로 가볍게 인사하다"], ["혼잣말을 많이 하다", "옆에 사람이 없는데 자기에게 자주 말하다"], ["입식 생활을 하다", "의자와 식탁, 침대를 쓰며 생활하다"], ["출가방을 대신 들어주다", "다른 사람의 가방을 대신 들어 주다"], ["식탁에서 코를 풀다", "코에 있는 것을 소리 내어 휴지에 내보내다"], ["수저", "숟가락과 젓가락을 함께 부르는 말"], ["포크", "음식을 찍어서 먹는 뾰족한 도구"], ["젓가락질", "젓가락으로 음식을 집어 먹는 일"], ["사과하다", "잘못했다고 말하며 미안하다고 하다"], ["밟다", "발로 위에서 누르다"], ["잡다", "손으로 꽉 쥐다"], ["공연", "사람들 앞에서 노래, 춤, 연극 등을 보여 주는 일"], ["완료", "일이 모두 끝남"], ["관람", "영화나 공연, 전시를 구경함"], ["공연장", "공연을 하는 건물이나 장소"], ["반입하다", "물건을 밖에서 안으로 가지고 들어오다"], ["관객", "공연이나 영화를 보러 온 사람들"], ["소리를 내다", "목소리나 다른 소리가 나오게 하다"], ["내려놓다", "들고 있던 것을 아래에 놓다"], ["이야기를 나누다", "서로 말을 주고받다"], ["예절", "사람들 사이에서 지켜야 하는 바른 행동"], ["어른", "나이가 많은 사람, 다 자란 사람"], ["들다", "손에 잡고 위로 올리다"], ["지키다", "약속이나 규칙을 어기지 않고 따르다"], ["야단맞다", "잘못해서 크게 혼나다"], ["말을 놓다", "존댓말을 쓰지 않고 편하게 말하다"], ["잘 부탁하다", "앞으로 도와 달라고 부탁하는 인사"], ["금방", "시간이 오래 걸리지 않고 바로"], ["각", "하나하나 모두, 따로따로"], ["여러 가지", "종류가 많은 것"], ["식사 중", "밥을 먹고 있는 동안"], ["이와 같이", "앞에서 말한 것처럼"], ["서로", "나와 상대방이 같이"], ["냄새가 나다", "코로 느껴지는 기운이 나다"], ["급한 전화", "빨리 받아야 하는 중요한 전화"], ["누구나", "한 사람도 빠짐없이 모든 사람"], ["규칙", "모두가 지키기로 정한 약속"], ["선택", "여러 가지 중에서 하나를 고름"], ["분위기", "어떤 장소나 모임에서 느껴지는 느낌"], ["졸업식", "학교를 마칠 때 하는 행사"], ["공연 예의", "공연을 볼 때 지켜야 하는 바른 행동"], ["그릇", "음식을 담는 물건"], ["시키다", "음식을 만들어 달라고 주문하다"], ["무료", "돈을 내지 않음"], ["밥그릇", "밥을 담는 작은 그릇"], ["식탁", "밥을 먹을 때 쓰는 탁자"], ["차이", "서로 다른 점"], ["일어서다", "앉아 있다가 서다"], ["반말을 하다", "존댓말이 아닌 편한 말로 말하다"], ["존댓말을 하다", "높이는 말로 공손하게 말하다"], ["다리를 꼬지 않다", "앉을 때 한쪽 다리를 다른 다리 위에 올리지 않다"], ["고개를 돌리고 마시다", "얼굴을 옆으로 돌리고 술이나 음료를 마시다"], ["좌식 생활을 하다", "바닥에 앉아서 생활하다"], ["눈을 마주보다", "상대방의 눈을 보다"], ["한 손으로 받다", "손 하나만 내밀어서 받다"], ["두 손으로 드리다", "손 두 개로 공손하게 주다"], ["손을 흔들면서 인사하다", "손을 좌우로 움직이며 인사하다"], ["이름을 부르다", "사람의 이름을 말해서 부르다"], ["신발을 벗다", "발에 신은 것을 빼다"], ["볼을 만지다", "얼굴 옆쪽을 손으로 대다"], ["성(이름)이 바뀌다", "성이나 이름이 다른 것으로 달라지다"], ["늦잠을 자는 시간이 있다", "아침에 평소보다 늦게까지 자도 되는 시간이 있다"], ["고개를 숙여서 인사하다", "머리를 앞으로 숙이며 인사하다"], ["물과 반찬이 무료이다", "물과 밑반찬 값을 따로 내지 않다"], ["밥그릇을 들고 먹다", "손으로 밥그릇을 들어서 먹다"], ["놀라다", "갑자기 생긴 일 때문에 깜짝 하다"], ["창피하다", "실수가 남에게 알려져서 얼굴을 들기 어렵다"], ["당황하다", "갑자기 일이 생겨서 어떻게 할지 몰라 허둥대다"], ["황당하다", "너무 뜻밖이어서 믿을 수 없다"], ["부끄럽다", "마음이 쑥스럽고 남에게 보이기 싫다"], ["민망하다", "상황이 어색해서 마음이 편하지 않다"], ["웃음이 나다", "저절로 웃게 되다"], ["얼굴이 빨개지다", "얼굴 색이 붉게 되다"], ["손에 땀이 나다", "긴장해서 손이 축축해지다"], ["가슴이 두근거리다", "긴장하거나 설레서 심장이 빠르게 뛰다"]];
-/* 10 блоков для «найди пару»: каждое слово ровно в одном блоке; похожие по смыслу слова разнесены по разным блокам. */
-const BLOCKS = [[1, 3, 4, 7, 22, 28, 40, 55, 62, 82, 101], [2, 5, 8, 13, 16, 23, 29, 41, 56, 63, 102], [6, 9, 12, 17, 24, 30, 42, 57, 64, 83, 103], [10, 14, 18, 25, 31, 43, 45, 65, 76, 84, 104], [11, 15, 19, 26, 32, 44, 46, 66, 79, 85, 105], [20, 21, 27, 33, 47, 58, 67, 77, 80, 86, 106], [34, 35, 48, 52, 59, 61, 68, 71, 78, 87, 107], [36, 37, 49, 53, 60, 69, 72, 88, 89, 98, 108], [38, 39, 50, 51, 54, 70, 73, 90, 91, 99, 109], [74, 75, 81, 92, 93, 94, 95, 96, 97, 100]];
+/* 3 блока для «найди пару» (выборка слов из списка; номер слова = позиция в W, с 1) */
+const BLOCKS = [[6, 9, 12, 17, 24, 30, 42, 57, 64, 83, 103], [11, 15, 19, 26, 32, 44, 46, 66, 79, 85, 105], [36, 37, 49, 53, 60, 69, 72, 88, 89, 98, 108]];
 const NB = BLOCKS.length;
-const T_TYPED = 1, T_CHOICE = 2, T_MATCH0 = 3;           // задания: 1 — диктант, 2 — выбор, 3… — блоки пар
-const TASK_IDS = Array.from({length:2+NB},(_,i)=>i+1);
+const T_TYPED = 1, T_CHOICE = 2, T_MATCH0 = 3, T_FILL = T_MATCH0+NB, T_ERR = T_FILL+1, T_SIT = T_ERR+1, T_TEXT = T_SIT+1;
+const TASK_IDS = Array.from({length:T_TEXT},(_,i)=>i+1);
+const TOTAL_SEC = 30*60;
+/* веса заданий в итоге из 100 баллов */
+const WT = { typed:10, choice:10, match:15, fill:15, err:10, sit:20, text:20 };
 
 /* Задание 1: по объяснению напиши слово (a — допустимые ответы, пробелы не важны) */
-const TYPED = [{"p": "모두가 지키기로 정한 약속", "a": ["규칙"]}, {"p": "사람들 사이에서 지켜야 하는 바른 행동", "a": ["예절"]}, {"p": "어떤 장소나 모임에서 느껴지는 느낌", "a": ["분위기"]}, {"p": "학교를 마칠 때 하는 행사", "a": ["졸업식"]}, {"p": "음식을 찍어서 먹는 뾰족한 도구", "a": ["포크"]}, {"p": "공연을 하는 건물이나 장소", "a": ["공연장"]}, {"p": "돈을 내지 않음", "a": ["무료"]}, {"p": "나이가 많은 사람, 다 자란 사람", "a": ["어른"]}, {"p": "담배에 불을 붙여 연기를 마시다", "a": ["담배를 피우다", "담배피우다"]}, {"p": "필요 없는 물건을 쓰레기통에 넣다", "a": ["쓰레기를 버리다", "쓰레기버리다"]}];
+const TYPED = [
+  {p:"모두가 지키기로 정한 약속", a:["규칙"]},
+  {p:"사람들 사이에서 지켜야 하는 바른 행동", a:["예절"]},
+  {p:"어떤 장소나 모임에서 느껴지는 느낌", a:["분위기"]},
+  {p:"학교를 마칠 때 하는 행사", a:["졸업식"]},
+  {p:"공연을 하는 건물이나 장소", a:["공연장"]},
+  {p:"돈을 내지 않음", a:["무료"]},
+  {p:"나이가 많은 사람, 다 자란 사람", a:["어른"]},
+  {p:"필요 없는 물건을 쓰레기통에 넣다", a:["쓰레기를 버리다","쓰레기버리다"]},
+  {p:"기다리는 사람들 앞에 몰래 끼어들다", a:["새치기를 하다","새치기하다","새치기"]},
+  {p:"담배에 불을 붙여 연기를 마시다", a:["담배를 피우다","담배피우다"]}
+];
 /* Задание 2: выбери правильный вариант [вопрос, варианты, номер правильного] */
 const CHOICE = [
   ["공연이나 영화를 보러 온 사람들", ["공연","그릇","관객","차이"], 2],
-  ["숟가락과 젓가락을 함께 부르는 말", ["수저","젓가락질","그릇","밥그릇"], 0],
   ["서로 다른 점", ["선택","관람","완료","차이"], 3],
   ["여러 가지 중에서 하나를 고름", ["차이","선택","관람","완료"], 1],
-  ["영화나 공연을 구경함", ["선택","완료","서로","관람"], 3],
-  ["일이 모두 끝남", ["관람","금방","완료","서로"], 2],
   ["담배를 피우면 안 된다는 뜻", ["주차 금지","출입 금지","금연","사진 촬영 금지"], 2],
   ["먹을 것을 가지고 들어가면 안 된다는 뜻", ["휴대폰 사용 금지","금연","출입 금지","음식물 반입 금지"], 3],
   ["공연이 시작되기 전에 해야 하는 일은?", ["동영상을 찍다","휴대폰을 끄다","큰소리로 통화하다","낙서를 하다"], 1],
   ["공연장에서 하면 안 되는 일은?", ["박수를 치다","조용히 하다","사진을 몰래 찍다","휴대폰을 진동으로 하다"], 2],
   ["기다리는 사람들 앞에 몰래 끼어드는 것은?", ["줄을 서다","차례를 기다리다","질서를 지키다","새치기를 하다"], 3],
-  ["잘못했다고 말하며 미안하다고 하다", ["야단맞다","사과하다","놀라다","시키다"], 1],
   ["잘못해서 크게 혼나다", ["사과하다","시키다","반입하다","야단맞다"], 3],
   ["내 자리를 다른 사람이 앉게 주다", ["자리를 바꾸다","발을 올리다","자리를 양보하다","문에 기대다"], 2],
   ["어른에게 물건을 줄 때는 어떻게 해요?", ["한 손으로 받다","볼을 만지다","두 손으로 드리다","머리를 쓰다듬다"], 2],
-  ["어른 앞에서 술을 마실 때는 어떻게 해요?", ["밥그릇을 들고 먹다","신발을 벗다","눈인사를 하다","고개를 돌리고 마시다"], 3],
-  ["한국에서 밥을 먹을 때 하면 안 되는 일은?", ["다리를 꼬지 않다","식탁에서 코를 풀다","어른이 말할 때 조용히 하다","자리를 양보하다"], 1],
-  ["의자와 식탁, 침대를 쓰며 생활하다", ["입식 생활을 하다","좌식 생활을 하다","혼잣말을 많이 하다","이름을 부르다"], 0],
-  ["바닥에 앉아서 생활하다", ["혼잣말을 많이 하다","입식 생활을 하다","이름을 부르다","좌식 생활을 하다"], 3],
-  ["긴장해서 손이 축축해지다", ["얼굴이 빨개지다","가슴이 두근거리다","웃음이 나다","손에 땀이 나다"], 3]
+  ["어른 앞에서 술을 마실 때는 어떻게 해요?", ["밥그릇을 들고 먹다","신발을 벗다","눈인사를 하다","고개를 돌리고 마시다"], 3]
 ];
+/* Задание 6: закончи предложение. s — предложение, h — слово в словарной форме, re — допустимое начало ответа (без пробелов), m — образец */
+const FILL = [
+  {s:"영화가 시작되기 전에 휴대폰을 ______.", h:"끄다", re:/^(꺼|끄|끕)/, m:"꺼야 해요"},
+  {s:"버스에서 할머니가 타셨어요. 그래서 제 자리를 ______.", h:"양보하다", re:/^양보/, m:"양보했어요"},
+  {s:"식당 앞에서 사람들이 ______.", h:"줄을 서다", re:/^줄을?(서|섰)/, m:"줄을 서 있어요"},
+  {s:"친구의 물건을 허락 없이 썼어요. 그래서 친구에게 ______.", h:"사과하다", re:/^사과/, m:"사과했어요"},
+  {s:"어른에게 선물을 드릴 때는 ______.", h:"두 손으로 드리다", re:/^두손으로드/, m:"두 손으로 드려요"},
+  {s:"선생님께는 반말이 아니라 ______ 해야 해요.", h:"존댓말을 하다", re:/^존댓말/, m:"존댓말을"},
+  {s:"공연장에서는 다른 관객을 위해 ______.", h:"조용히 하다", re:/^조용/, m:"조용히 해야 해요"},
+  {s:"한국에서는 집에 들어갈 때 ______.", h:"신발을 벗다", re:/^신발을?벗/, m:"신발을 벗어요"}
+];
+/* Задание 7: найди неправильное предложение (ans — номер, fix — образец исправления) */
+const ERR = [
+  {s:["친구가 넘어졌을 때 도와주었어요.","선생님께 반말을 사용했어요.","실수했을 때 사과했어요."], ans:1, fix:"선생님께 존댓말을 사용했어요."},
+  {s:["극장에서 휴대폰을 껐어요.","영화가 끝난 뒤에 박수를 쳤어요.","공연 중에 사진을 몰래 찍었어요."], ans:2, fix:"공연 중에는 사진을 찍지 않았어요."},
+  {s:["줄이 길어서 새치기를 했어요.","줄을 서서 차례를 기다렸어요.","질서를 지켰어요."], ans:0, fix:"줄이 길어서 차례를 기다렸어요."},
+  {s:["어른에게 두 손으로 선물을 드렸어요.","어른이 말할 때 조용히 들었어요.","어른 앞에서 다리를 꼬고 앉았어요."], ans:2, fix:"어른 앞에서 다리를 꼬지 않고 앉았어요."},
+  {s:["식탁에서 수저를 사용했어요.","식사 중에 큰소리로 통화했어요.","밥그릇을 들고 먹지 않았어요."], ans:1, fix:"식사 중에는 조용히 통화했어요. (또는 통화하지 않았어요.)"}
+];
+/* Задание 8: ситуации. re — ключевые слова уместного ответа (проверка предварительная, текст читает преподаватель) */
+const SIT = [
+  {s:"친구의 물건을 허락 없이 사용했어요. 친구에게 뭐라고 말할까요?", re:/미안|죄송|사과/, m:"미안해. 허락 없이 써서 미안해."},
+  {s:"버스에 앉아 있는데 할머니가 타셨어요. 어떻게 할까요?", re:/양보|일어|앉으세요|앉으십시오|앉으시/, m:"자리에서 일어나서 할머니께 자리를 양보해요."},
+  {s:"영화가 곧 시작해요. 휴대폰을 어떻게 해야 해요?", re:/끄|꺼|끕|진동/, m:"휴대폰을 꺼야 해요. (또는 진동으로 해요.)"},
+  {s:"처음 만난 어른께 인사해요. 어떻게 인사하고 뭐라고 말해요?", re:/고개|숙|두손|안녕하세요|잘부탁|반갑/, m:"고개를 숙여서 인사하고 “안녕하세요? 잘 부탁합니다.”라고 말해요."}
+];
+/* Задание 9: мини-текст. STEMS — основы слов темы, по ним считаем, сколько слов из списка ученик употребил */
+const STEMS = ["예절","예의","규칙","질서","양보","사과","존댓말","반말","관객","공연","분위기","줄을","새치기","조용","휴대폰","박수","쓰레기","어른","수저","식탁","신발","인사","악수","차례","지키","큰소리","통화","떠들","금지","이름을부르","눈을마주","두손","고개","선택","서로","누구나","무료","야단"];
+
+/* ---------- ТАЙМЕР ---------- */
+const timer = {started:false, elapsed:0, over:false};
+let finished=null;
+const fmt = s => { const a=Math.abs(s); return String(Math.floor(a/60)).padStart(2,"0")+":"+String(a%60).padStart(2,"0"); };
+function drawTimer(){
+  const left=TOTAL_SEC-timer.elapsed;
+  $("#tm").textContent = left>=0 ? "⏱ "+fmt(left) : "⏱ +"+fmt(left);
+  $("#tmhint").textContent = left>=0 ? "осталось" : "сверх времени";
+  $("#tmbar").style.width = Math.min(100,timer.elapsed/TOTAL_SEC*100)+"%";
+  $("#timerbox").className = "timerbox"+(left<0?" over":left<300?" warn":"");
+  $("#overmsg").classList.toggle("hidden", left>=0);
+  if (left<0 && !timer.over){ timer.over=true; drawProgress(); }
+}
+let lastTick=Date.now();
+setInterval(()=>{
+  const n=Date.now(), d=Math.round((n-lastTick)/1000); if (d<1) return; lastTick=n;
+  if (!timer.started || finished || document.hidden) return;
+  const prev=timer.elapsed; timer.elapsed+=Math.min(d,5); drawTimer();
+  if (Math.floor(prev/10)!==Math.floor(timer.elapsed/10)) save();
+},500);
+function showGate(){ $("#gate").classList.remove("hidden"); $("#run").classList.add("hidden"); }
+function showRun(){ $("#gate").classList.add("hidden"); $("#run").classList.remove("hidden"); drawTimer(); drawProgress(); }
+$("#begin").onclick=()=>{ timer.started=true; lastTick=Date.now(); showRun(); save(); window.scrollTo({top:0,behavior:"smooth"}); };
 
 /* ---------- ПОСТРОЕНИЕ КАРТОЧЕК ---------- */
 function buildCards(){
   let h = `
   <section class="card" data-task="1">
     <h2><span class="num">1</span><span class="ko">한국어로 쓰세요</span></h2>
-    <p class="hint">Прочитай объяснение и напиши слово по-корейски (в словарной форме). Пробелы не важны.</p>
+    <p class="hint">⏱ ~3 мин · Прочитай объяснение и напиши слово по-корейски (в словарной форме). Пробелы не важны.</p>
     <div id="t1"></div>
     <div class="row" style="margin-top:12px"><button id="t1-check">Проверить</button><span class="score" id="t1-score"></span></div>
   </section>
   <section class="card" data-task="2">
     <h2><span class="num">2</span><span class="ko">알맞은 것을 고르세요</span></h2>
-    <p class="hint">Выбери правильный вариант.</p>
+    <p class="hint">⏱ ~3 мин · Выбери правильный вариант.</p>
     <div id="t2"></div>
     <div class="row" style="margin-top:12px"><button id="t2-check">Проверить</button><span class="score" id="t2-score"></span></div>
   </section>`;
@@ -187,11 +289,37 @@ function buildCards(){
     h += `
   <section class="card" data-task="${T_MATCH0+b}">
     <h2><span class="num">${T_MATCH0+b}</span><span class="ko">짝 찾기 ${b+1}/${NB}</span></h2>
-    <p class="hint">Нажми слово слева, потом подходящее объяснение справа.</p>
+    <p class="hint">${b===0?"⏱ ~4 мин на три блока · ":""}Нажми слово слева, потом подходящее объяснение справа.</p>
     <div class="match"><div class="col" id="mk${b}"></div><div class="col" id="mr${b}"></div></div>
     <div class="row" style="margin-top:12px"><span class="fb" id="mfb${b}" style="margin:0">Ошибок: 0</span><span class="score" id="msc${b}"></span></div>
   </section>`;
   }
+  h += `
+  <section class="card" data-task="${T_FILL}">
+    <h2><span class="num">${T_FILL}</span><span class="ko">문장을 완성하세요</span></h2>
+    <p class="hint">⏱ ~4 мин · Впиши в пропуск слово из скобок в нужной форме, чтобы получилось правильное предложение.</p>
+    <div id="tfill"></div>
+    <div class="row" style="margin-top:12px"><button id="tfill-check">Проверить</button><span class="score" id="tfill-score"></span></div>
+  </section>
+  <section class="card" data-task="${T_ERR}">
+    <h2><span class="num">${T_ERR}</span><span class="ko">어색한 문장을 찾으세요</span></h2>
+    <p class="hint">⏱ ~3 мин · В каждой тройке одно предложение звучит неправильно или невежливо. Выбери его и перепиши правильно (исправление читает преподаватель).</p>
+    <div id="terr"></div>
+    <div class="row" style="margin-top:12px"><button id="terr-check">Проверить</button><span class="score" id="terr-score"></span></div>
+  </section>
+  <section class="card" data-task="${T_SIT}">
+    <h2><span class="num">${T_SIT}</span><span class="ko">상황에 맞게 말하세요</span></h2>
+    <p class="hint">⏱ ~4 мин · Напиши по-корейски 1–2 предложения: что ты скажешь или сделаешь. Ответы читает преподаватель, программа ставит предварительные баллы.</p>
+    <div id="tsit"></div>
+    <div class="row" style="margin-top:12px"><button id="tsit-check">Готово</button><span class="score" id="tsit-score"></span></div>
+  </section>
+  <section class="card" data-task="${T_TEXT}">
+    <h2><span class="num">${T_TEXT}</span><span class="ko">짧은 글쓰기</span></h2>
+    <p class="hint">⏱ ~5 мин · Тема: <b class="ko">바람직한 예절이란 무엇일까요?</b> Напиши 4–5 предложений и используй не меньше 5 слов или выражений, которые ты выучил(а) по этой теме.</p>
+    <textarea class="big ko" id="ttext" placeholder="여기에 쓰세요…" spellcheck="false"></textarea>
+    <div class="row" style="margin-top:12px"><button id="ttext-check">Готово</button><span class="score" id="ttext-score"></span></div>
+    <p class="fb" id="ttext-fb"></p>
+  </section>`;
   $("#cards").innerHTML = h;
 }
 
@@ -200,11 +328,11 @@ function drawProgress(){
   const p = $("#progress"); p.innerHTML = "";
   TASK_IDS.forEach(i=>{ const s=document.createElement("span"); if(results[i]) s.className="done"; p.appendChild(s); });
   const ready = TASK_IDS.every(i=>results[i]);
-  $("#finish").disabled = !ready;
-  $("#finish-hint").classList.toggle("hidden", ready);
+  $("#finish").disabled = !(ready || timer.over);
+  $("#finish-hint").classList.toggle("hidden", ready || timer.over);
 }
 
-/* ---------- ЗАДАНИЕ 1: ДИКТАНТ ---------- */
+/* ---------- ЗАДАНИЕ 1: ВСПОМНИ СЛОВО ---------- */
 function initT1(){
   $("#t1").innerHTML = TYPED.map((t,i)=>`<div class="q"><div class="text ko">${i+1}. ${esc(t.p)}</div><input type="text" class="ko" data-i="${i}" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="한국어로 쓰세요"><div class="fb hidden"></div></div>`).join("");
   $("#t1-score").textContent = "";
@@ -240,24 +368,25 @@ function initT2(){
   });
   $("#t2-score").textContent="";
 }
-function checkT2(){
+function checkT2(force){
   if (results[T_CHOICE]) return;
   const qs=[...document.querySelectorAll("#t2 .q")];
-  if (qs.some(q=>q.dataset.pick===undefined)) { $("#t2-score").textContent="Ответь на все вопросы"; return; }
+  if (!force && qs.some(q=>q.dataset.pick===undefined)) { $("#t2-score").textContent="Ответь на все вопросы"; return; }
   let got=0; const wrong=[];
-  qs.forEach((q,i)=>{ q.dataset.locked=1; const pick=+q.dataset.pick, it=choiceItems[i];
+  qs.forEach((q,i)=>{ q.dataset.locked=1; const pick=q.dataset.pick===undefined?-1:+q.dataset.pick, it=choiceItems[i];
     q.querySelectorAll(".opt").forEach((b,j)=>{ b.classList.remove("sel"); if(j===it.ans) b.classList.add("right"); else if(j===pick) b.classList.add("wrongpick"); });
-    if(pick===it.ans) got++; else wrong.push({n:i+1, q:it.s, pick:it.opts[pick], right:it.opts[it.ans]});
+    if(pick===it.ans) got++; else wrong.push({n:i+1, q:it.s, pick:it.opts[pick]||"—", right:it.opts[it.ans]});
   });
   results[T_CHOICE]={got,max:choiceItems.length,wrong};
   $("#t2-score").textContent=`${got} / ${choiceItems.length}`; drawProgress(); save();
 }
 
-/* ---------- ЗАДАНИЯ 3…: ПАРЫ (все 109 слов) ---------- */
+/* ---------- ЗАДАНИЯ 3–5: ПАРЫ ---------- */
 const M = [];  // состояние блоков: {sel, errs:{номерСлова:кол-во}, done:Set}
 function updMatchFb(b){ const n=Object.values(M[b].errs).reduce((a,x)=>a+x,0); $("#mfb"+b).textContent="Ошибок: "+n; }
 function finishMatch(b){
-  const idxs=BLOCKS[b], weak=idxs.filter(i=>M[b].errs[i]);
+  if (results[T_MATCH0+b]) return;
+  const idxs=BLOCKS[b], weak=idxs.filter(i=>M[b].errs[i] || !M[b].done.has(i));
   const got=idxs.length-weak.length;
   results[T_MATCH0+b]={got,max:idxs.length,weak:weak.map(i=>W[i-1][0])};
   $("#msc"+b).textContent=`${got} / ${idxs.length}`; drawProgress(); save();
@@ -282,15 +411,117 @@ function initMatch(b){
   };
 }
 
+/* ---------- ЗАДАНИЕ 6: ЗАКОНЧИ ПРЕДЛОЖЕНИЕ ---------- */
+function initFill(){
+  $("#tfill").innerHTML = FILL.map((t,i)=>`<div class="q"><div class="text ko">${i+1}. ${esc(t.s)} <span class="hintw">(${esc(t.h)})</span></div><input type="text" class="ko" data-i="${i}" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="한국어로 쓰세요"><div class="fb hidden"></div></div>`).join("");
+  $("#tfill-score").textContent="";
+  $("#tfill").oninput=()=>save();
+}
+function checkFill(){
+  if (results[T_FILL]) return;
+  let got=0; const wrong=[];
+  [...document.querySelectorAll("#tfill input")].forEach(inp=>{
+    const t=FILL[+inp.dataset.i], ok=t.re.test(normA(inp.value));
+    inp.disabled=true; inp.classList.add(ok?"right":"wrongpick");
+    if (ok) got++; else {
+      const fb=inp.parentElement.querySelector(".fb"); fb.textContent="Например: "+t.m; fb.classList.remove("hidden");
+      wrong.push({s:t.s, typed:inp.value.trim(), right:t.m});
+    }
+  });
+  results[T_FILL]={got,max:FILL.length,wrong};
+  $("#tfill-score").textContent=`${got} / ${FILL.length}`; drawProgress(); save();
+}
+
+/* ---------- ЗАДАНИЕ 7: НАЙДИ ОШИБКУ ---------- */
+const NUMS=["①","②","③"];
+function initErr(){
+  const box=$("#terr"); box.innerHTML="";
+  ERR.forEach((it,i)=>{
+    const q=document.createElement("div"); q.className="q";
+    q.innerHTML=`<div class="text">${i+1}. Какое предложение неправильное?</div>`;
+    const opts=document.createElement("div"); opts.className="opts stack ko";
+    it.s.forEach((s,j)=>{ const b=document.createElement("button"); b.className="opt"; b.textContent=NUMS[j]+" "+s;
+      b.onclick=()=>{ if(q.dataset.locked) return; opts.querySelectorAll(".opt").forEach(x=>x.classList.remove("sel")); b.classList.add("sel"); q.dataset.pick=j; save(); };
+      opts.appendChild(b); });
+    q.appendChild(opts);
+    const fx=document.createElement("input"); fx.type="text"; fx.className="ko fix"; fx.placeholder="올바르게 고쳐 쓰세요 (перепиши правильно)"; fx.autocomplete="off"; fx.spellcheck=false;
+    fx.oninput=()=>save(); q.appendChild(fx);
+    const fb=document.createElement("div"); fb.className="fb hidden"; q.appendChild(fb);
+    box.appendChild(q);
+  });
+  $("#terr-score").textContent="";
+}
+function checkErr(force){
+  if (results[T_ERR]) return;
+  const qs=[...document.querySelectorAll("#terr .q")];
+  if (!force && qs.some(q=>q.dataset.pick===undefined)) { $("#terr-score").textContent="Выбери предложение в каждом вопросе"; return; }
+  let got=0; const wrong=[], fixes=[];
+  qs.forEach((q,i)=>{ q.dataset.locked=1; const it=ERR[i], pick=q.dataset.pick===undefined?-1:+q.dataset.pick;
+    q.querySelectorAll(".opt").forEach((b,j)=>{ b.classList.remove("sel"); if(j===it.ans) b.classList.add("right"); else if(j===pick) b.classList.add("wrongpick"); });
+    const fx=q.querySelector("input.fix"); fx.disabled=true;
+    const fb=q.querySelector(".fb"); fb.classList.remove("hidden"); fb.classList.add("model"); fb.textContent="Например: "+it.fix;
+    fixes.push({n:i+1, bad:it.s[it.ans], fix:fx.value.trim(), model:it.fix});
+    if (pick===it.ans) got++; else wrong.push({n:i+1, pick:pick<0?"—":it.s[pick], right:it.s[it.ans]});
+  });
+  results[T_ERR]={got,max:ERR.length,wrong,fixes};
+  $("#terr-score").textContent=`${got} / ${ERR.length}`; drawProgress(); save();
+}
+
+/* ---------- ЗАДАНИЕ 8: СИТУАЦИИ ---------- */
+function initSit(){
+  $("#tsit").innerHTML = SIT.map((t,i)=>`<div class="q"><div class="text ko">${i+1}. ${esc(t.s)}</div><textarea class="big ko" data-i="${i}" placeholder="한국어로 쓰세요" spellcheck="false"></textarea><div class="fb model hidden"></div></div>`).join("");
+  $("#tsit-score").textContent="";
+  $("#tsit").oninput=()=>save();
+}
+function checkSit(){
+  if (results[T_SIT]) return;
+  let got=0; const answers=[];
+  [...document.querySelectorAll("#tsit textarea")].forEach(ta=>{
+    const t=SIT[+ta.dataset.i], v=ta.value.trim(), n=normA(v);
+    const pts=(t.re.test(n)?1:0)+(n.length>=8?1:0);
+    got+=pts; ta.disabled=true;
+    const fb=ta.parentElement.querySelector(".fb"); fb.textContent="Например: "+t.m; fb.classList.remove("hidden");
+    answers.push({n:+ta.dataset.i+1, s:t.s, a:v, pts});
+  });
+  results[T_SIT]={got,max:SIT.length*2,answers};
+  $("#tsit-score").textContent=`${got} / ${SIT.length*2} (предв.)`; drawProgress(); save();
+}
+
+/* ---------- ЗАДАНИЕ 9: МИНИ-ТЕКСТ ---------- */
+function initText(){ const ta=$("#ttext"); ta.value=""; ta.disabled=false; ta.oninput=()=>save(); $("#ttext-score").textContent=""; $("#ttext-fb").textContent=""; }
+function checkText(){
+  if (results[T_TEXT]) return;
+  const ta=$("#ttext"), text=ta.value.trim(), n=norm(text);
+  const words=STEMS.filter(s=>n.includes(s));
+  const sents=text.split(/[.!?。\n]+/).map(x=>x.trim()).filter(x=>x.length>=4).length;
+  const got=Math.min(words.length,5)*2 + Math.round(Math.min(sents,4)/4*5);
+  ta.disabled=true;
+  results[T_TEXT]={got,max:15,n:words.length,sents,words,text};
+  $("#ttext-score").textContent=`${got} / 15 (предв.)`;
+  $("#ttext-fb").textContent=`Предложений: ${sents}. Слов по теме найдено: ${words.length}${words.length<5?" (нужно было минимум 5)":""}.`;
+  drawProgress(); save();
+}
+
+function forceAll(){
+  checkT1(); checkT2(true);
+  for (let b=0;b<NB;b++) finishMatch(b);
+  checkFill(); checkErr(true); checkSit(); checkText();
+}
+
 /* ---------- СОХРАНЕНИЕ / ВОССТАНОВЛЕНИЕ ---------- */
-const KEY="etiket-progress-v1", CRED="etiket-login-v1";
-let restoring=false, finished=null;
+const KEY="etiket-progress-v2", CRED="etiket-login-v1";
+let restoring=false;
 function collect(){
   return {
     name: studentName,
+    timer: {started:timer.started, elapsed:timer.elapsed},
     t1: { values:[...document.querySelectorAll("#t1 input")].map(x=>x.value), checked:!!results[T_TYPED] },
     t2: { picks:[...document.querySelectorAll("#t2 .q")].map(q=>q.dataset.pick ?? null), checked:!!results[T_CHOICE] },
-    m: M.map(s=>({done:[...s.done], errs:s.errs})),
+    m: M.map((s,b)=>({done:[...s.done], errs:s.errs, fin:!!results[T_MATCH0+b]})),
+    fill: { values:[...document.querySelectorAll("#tfill input")].map(x=>x.value), checked:!!results[T_FILL] },
+    err: { picks:[...document.querySelectorAll("#terr .q")].map(q=>q.dataset.pick ?? null), fixes:[...document.querySelectorAll("#terr input.fix")].map(x=>x.value), checked:!!results[T_ERR] },
+    sit: { values:[...document.querySelectorAll("#tsit textarea")].map(x=>x.value), checked:!!results[T_SIT] },
+    text: { value:$("#ttext").value, checked:!!results[T_TEXT] },
     finished
   };
 }
@@ -321,36 +552,55 @@ function loadCred(){ try{ return JSON.parse(localStorage.getItem(CRED)); }catch(
 function clearCred(){ try{ localStorage.removeItem(CRED); }catch(e){} }
 
 function restore(st){
+  /* состояние старой версии (без нового набора заданий) не подходит — начинаем заново */
+  if (!st || !st.fill) return;
   restoring=true;
+  timer.started=!!st.timer?.started; timer.elapsed=st.timer?.elapsed||0; timer.over=timer.elapsed>TOTAL_SEC;
   const inputs=[...document.querySelectorAll("#t1 input")];
   (st.t1?.values||[]).forEach((v,i)=>{ if(inputs[i]) inputs[i].value=v; });
   if (st.t1?.checked) checkT1();
   [...document.querySelectorAll("#t2 .q")].forEach((q,i)=>{ const p=st.t2?.picks?.[i]; if(p===null||p===undefined) return;
     q.dataset.pick=p; q.querySelectorAll(".opt")[+p]?.classList.add("sel"); });
-  if (st.t2?.checked) checkT2();
+  if (st.t2?.checked) checkT2(true);
   (st.m||[]).forEach((s,b)=>{ if(!M[b]) return;
     const done=new Set(s.done||[]); M[b].errs=s.errs||{}; M[b].done=done;
     document.querySelectorAll(`#mk${b} .tile, #mr${b} .tile`).forEach(t=>{ if(done.has(+t.dataset.i)) t.classList.add("done"); });
     updMatchFb(b);
-    if (done.size===BLOCKS[b].length) finishMatch(b);
+    if (s.fin || done.size===BLOCKS[b].length) finishMatch(b);
   });
+  const fi=[...document.querySelectorAll("#tfill input")];
+  (st.fill?.values||[]).forEach((v,i)=>{ if(fi[i]) fi[i].value=v; });
+  if (st.fill?.checked) checkFill();
+  [...document.querySelectorAll("#terr .q")].forEach((q,i)=>{ const p=st.err?.picks?.[i];
+    const fx=q.querySelector("input.fix"); if(fx) fx.value=st.err?.fixes?.[i]||"";
+    if(p===null||p===undefined) return; q.dataset.pick=p; q.querySelectorAll(".opt")[+p]?.classList.add("sel"); });
+  if (st.err?.checked) checkErr(true);
+  const si=[...document.querySelectorAll("#tsit textarea")];
+  (st.sit?.values||[]).forEach((v,i)=>{ if(si[i]) si[i].value=v; });
+  if (st.sit?.checked) checkSit();
+  $("#ttext").value=st.text?.value||"";
+  if (st.text?.checked) checkText();
   finished=st.finished||null;
-  drawProgress();
   restoring=false;
 }
 
 /* ---------- ХОД РАБОТЫ ---------- */
 function initAll(){
   for (const k in results) delete results[k];
-  finished=null; buildCards(); initT1(); initT2();
+  finished=null; timer.started=false; timer.elapsed=0; timer.over=false;
+  buildCards(); initT1(); initT2();
   M.length=0; for (let b=0;b<NB;b++) initMatch(b);
-  $("#t1-check").onclick=checkT1; $("#t2-check").onclick=checkT2;
-  drawProgress();
+  initFill(); initErr(); initSit(); initText();
+  $("#t1-check").onclick=checkT1; $("#t2-check").onclick=()=>checkT2(false);
+  $("#tfill-check").onclick=checkFill; $("#terr-check").onclick=()=>checkErr(false);
+  $("#tsit-check").onclick=checkSit; $("#ttext-check").onclick=checkText;
+  drawTimer(); drawProgress(); showGate();
 }
 function openTasks(){ $("#start").classList.add("hidden"); $("#result").classList.add("hidden"); $("#tasks").classList.remove("hidden"); $("#who").textContent="👤 "+studentName; }
 function enter(st){
   openTasks(); initAll();
   if (st) restore(st);
+  if (timer.started) showRun(); else showGate();
   if (finished && TASK_IDS.every(i=>results[i])){
     showResult(buildReport(finished.time));
     $("#send-status").textContent = finished.sent ? "✅ Отчёт уже был отправлен преподавателю" : "Скопируй отчёт и пришли его преподавателю.";
@@ -395,26 +645,48 @@ $("#logout").onclick=logout; $("#logout2").onclick=logout;
 
 /* ---------- ОТЧЁТ ---------- */
 function buildReport(time){
-  const r1=results[T_TYPED], r2=results[T_CHOICE];
+  const r1=results[T_TYPED], r2=results[T_CHOICE], rf=results[T_FILL], re=results[T_ERR], rs=results[T_SIT], rt=results[T_TEXT];
   let mGot=0, mMax=0; const mLines=[], mWeak=[];
   for (let b=0;b<NB;b++){ const r=results[T_MATCH0+b]; mGot+=r.got; mMax+=r.max;
     mLines.push(`${b+1}: ${r.got}/${r.max}`); if(r.weak.length) mWeak.push(`  блок ${b+1}: ${r.weak.join(", ")}`); }
-  const got=r1.got+r2.got+mGot, max=r1.max+r2.max+mMax, pct=Math.round(got/max*100);
+  const p=(r,w)=>r.got/r.max*w;
+  const auto=p(r1,WT.typed)+p(r2,WT.choice)+mGot/mMax*WT.match+p(rf,WT.fill)+p(re,WT.err);
+  const writ=p(rs,WT.sit)+p(rt,WT.text);
+  const autoMax=WT.typed+WT.choice+WT.match+WT.fill+WT.err, writMax=WT.sit+WT.text;
+  const got=Math.round(auto+writ), max=100, pct=got;
+  const sk=(g,m)=>Math.round(g/m*100)+"%";
   const L=[];
-  L.push("📋 예절 — контрольная по лексике (109 слов)", `👤 ${studentName}`, `🕒 ${time}`, "",
-    `Итог: ${got}/${max} (${pct}%)`,
+  L.push("📋 예절 — контрольная по лексике", `👤 ${studentName}`, `🕒 ${time}`,
+    `⏱ Время: ${fmt(timer.elapsed)} из ${fmt(TOTAL_SEC)}${timer.elapsed>TOTAL_SEC?" (превышено)":""}`, "",
+    `Итог: ${got}/100`,
+    `• автопроверка (задания 1–${T_ERR}): ${Math.round(auto)}/${autoMax}`,
+    `• письменные (${T_SIT}–${T_TEXT}), предварительно: ${Math.round(writ)}/${writMax} — нужна проверка преподавателя`, "",
+    "Навыки:",
+    `• узнаёт значение (выбор + пары): ${sk(r2.got+mGot,r2.max+mMax)}`,
+    `• вспоминает слово сам(а): ${sk(r1.got,r1.max)}`,
+    `• употребляет в предложении (задания ${T_FILL}–${T_ERR}): ${sk(rf.got+re.got,rf.max+re.max)}`,
+    `• применяет в ситуации и тексте (задания ${T_SIT}–${T_TEXT}): ${sk(rs.got+rt.got,rs.max+rt.max)}`, "",
     `1. Слово по объяснению: ${r1.got}/${r1.max}`,
     `2. Выбор: ${r2.got}/${r2.max}`,
-    `3. Слово ↔ объяснение: ${mGot}/${mMax}  [блоки ${mLines.join(" · ")}]`);
-  if (r1.wrong.length){ L.push("", "❗ Диктант — ошибки:"); r1.wrong.forEach(w=>L.push(`• ${w.p} → написал(а) «${w.typed||"—"}», правильно «${w.right}»`)); }
+    `3–${T_FILL-1}. Слово ↔ объяснение: ${mGot}/${mMax}  [блоки ${mLines.join(" · ")}]`,
+    `${T_FILL}. Закончи предложение: ${rf.got}/${rf.max}`,
+    `${T_ERR}. Найди ошибку: ${re.got}/${re.max}`,
+    `${T_SIT}. Ситуации: ${rs.got}/${rs.max} (предв.)`,
+    `${T_TEXT}. Мини-текст: ${rt.got}/${rt.max} (предв.), слов по теме: ${rt.n}, предложений: ${rt.sents}`);
+  if (r1.wrong.length){ L.push("", "❗ Вспомнить слово — ошибки:"); r1.wrong.forEach(w=>L.push(`• ${w.p} → написал(а) «${w.typed||"—"}», правильно «${w.right}»`)); }
   if (r2.wrong.length){ L.push("", "❗ Выбор — ошибки:"); r2.wrong.forEach(w=>L.push(`• №${w.n} ${w.q.length>45?w.q.slice(0,45)+"…":w.q}: выбрано «${w.pick}», правильно «${w.right}»`)); }
   if (mWeak.length){ L.push("", "❗ Пары — слова, в которых были ошибки:", ...mWeak); }
-  if (!r1.wrong.length && !r2.wrong.length && !mWeak.length) L.push("", "✅ Ошибок нет");
+  if (rf.wrong.length){ L.push("", "❗ Предложения — ошибки:"); rf.wrong.forEach(w=>L.push(`• ${w.s} → «${w.typed||"—"}» (пример: ${w.right})`)); }
+  if (re.wrong.length){ L.push("", "❗ Поиск ошибки — неверный выбор:"); re.wrong.forEach(w=>L.push(`• №${w.n}: выбрано «${w.pick}», неправильное было «${w.right}»`)); }
+  L.push("", "✍️ Исправленные предложения (проверить):"); re.fixes.forEach(f=>L.push(`• №${f.n} ${f.bad} → «${f.fix||"—"}»`));
+  L.push("", "✍️ Ситуации (проверить):"); rs.answers.forEach(a=>L.push(`• №${a.n} ${a.s}`, `  → «${a.a||"—"}» [${a.pts}/2]`));
+  L.push("", "✍️ Мини-текст (проверить):", rt.text||"—", `Слова по теме: ${rt.words.join(", ")||"—"}`);
+  if (!r1.wrong.length && !r2.wrong.length && !mWeak.length && !rf.wrong.length && !re.wrong.length) L.push("", "✅ В автоматических заданиях ошибок нет");
   return {got,max,pct,text:L.join("\n")};
 }
 function showResult(r){
   $("#total").textContent=`${r.got} / ${r.max}`;
-  $("#breakdown").textContent = r.pct>=90?"훌륭해요! Отлично!": r.pct>=70?"잘했어요! Хорошо!":"Повтори слова и попробуй ещё раз 💪";
+  $("#breakdown").textContent = (r.pct>=90?"훌륭해요! Отлично!": r.pct>=70?"잘했어요! Хорошо!":"Повтори слова и попробуй ещё раз 💪")+" · письменные задания предварительно, их проверит преподаватель";
   $("#report").textContent=r.text;
   $("#start").classList.add("hidden"); $("#tasks").classList.add("hidden"); $("#result").classList.remove("hidden");
 }
@@ -425,6 +697,7 @@ function chunkText(text, lim=3800){
   return out;
 }
 $("#finish").onclick=async()=>{
+  forceAll();
   finished={ time:new Date().toLocaleString("ru-RU"), sent:false };
   const r=buildReport(finished.time); showResult(r); window.scrollTo({top:0,behavior:"smooth"});
   const st=$("#send-status"); st.textContent="";
